@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.UUID;
 
 import hexagon.Movie;
+import hexagon.UserRate;
 import hexagon.secondary.port.ForManagingMovies;
 import infra.secondary.jpa.entities.MovieEntity;
+import infra.secondary.jpa.entities.UserRateEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 
@@ -77,7 +79,7 @@ public class JpaForManagingMovies implements ForManagingMovies {
 	@Override
 	public List<Movie> pagedMoviesSortedByRate(int pageNumber) {
 		return pagedMoviesSortedBy(pageNumber,
-				"order by m.rating.totalUserVotes desc, m.rating.rateValue desc");
+				"order by m.totalUserVotes desc, m.rateValue desc");
 	}
 
 	@Override
@@ -102,4 +104,40 @@ public class JpaForManagingMovies implements ForManagingMovies {
 		return movieEntitiesToDomain(q);
 	}
 
+	@Override
+	public void rateMovie(Movie movie) {
+		var me = em.getReference(MovieEntity.class,
+				UUID.fromString(movie.id()));
+		me.addUserRateEntity(movie.getUserRates().stream()
+				.map(ur -> UserRateEntity.fromDomain(ur))
+				.toList());
+
+		me.newRateValues(movie.totalUserVotes(), movie.currentRateValue(),
+				movie.totalRate());
+	}
+
+	@Override
+	public List<UserRate> pagedRatesOrderedByDate(String movieId,
+			int pageNumber) {
+		var q = em.createQuery(
+				"select ur from UserRateEntity ur "
+						+ "where ur.movie.id = ?1 "
+						+ "order by ur.ratedAt desc",
+				UserRateEntity.class);
+		q.setParameter(1, UUID.fromString(movieId));
+		q.setFirstResult((pageNumber - 1) * this.pageSize);
+		q.setMaxResults(this.pageSize);
+		return q.getResultList().stream().map(ur -> ur.toDomain()).toList();
+	}
+
+	@Override
+	public boolean doesThisUserRateTheMovie(String userId,
+			String movieId) {
+		var q = this.em.createQuery(
+				"select ur from UserRateEntity ur where ur.user.id = ?1 and movie.id = ?2",
+				UserRateEntity.class);
+		q.setParameter(1, UUID.fromString(userId));
+		q.setParameter(2, UUID.fromString(movieId));
+		return q.getResultList().size() > 0;
+	}
 }

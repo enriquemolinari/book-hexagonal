@@ -55,9 +55,8 @@ public class CinemaSystemController {
 			ifAuthenticatedDo(token, userId -> {
 				var r = ctx.bodyAsClass(RateRequest.class);
 				var rated = this.cinema.rateMovieBy(userId,
-						ctx.pathParamAsClass("id", Long.class).get(),
+						ctx.pathParamAsClass("id", String.class).get(),
 						r.rateValue(), r.comment());
-
 				return ctx.json(rated);
 			});
 		};
@@ -86,7 +85,7 @@ public class CinemaSystemController {
 		};
 	}
 
-	private <S> S ifAuthenticatedDo(String token, Function<Long, S> method) {
+	private <S> S ifAuthenticatedDo(String token, Function<String, S> method) {
 		var userId = Optional.ofNullable(token).map(tk -> {
 			var uid = this.cinema.userIdFrom(tk);
 			return uid;
@@ -100,7 +99,7 @@ public class CinemaSystemController {
 		return ctx -> {
 			ctx.json(
 					this.cinema.show(
-							ctx.pathParamAsClass("id", Long.class).get()));
+							ctx.pathParamAsClass("id", String.class).get()));
 		};
 	}
 }

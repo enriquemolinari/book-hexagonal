@@ -52,13 +52,13 @@ public class PasetoToken implements Token {
 	}
 
 	@Override
-	public Long verifyAndGetUserIdFrom(String token) {
+	public String verifyAndGetUserIdFrom(String token) {
 		Paseto tk;
 		try {
 			tk = Pasetos.parserBuilder()
 					.setSharedSecret(Keys.secretKey(this.base64Secret)).build()
 					.parse(token);
-			return tk.getClaims().get("id", Long.class);
+			return tk.getClaims().get("id", String.class);
 		} catch (Exception ex) {
 			throw new AuthException(INVALID_TOKEN);
 		}

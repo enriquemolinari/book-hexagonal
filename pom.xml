@@ -9,8 +9,8 @@
 		<relativePath />
 	</parent>
 
-	<groupId>book-richdomainmodel</groupId>
-	<artifactId>book-richdomainmodel</artifactId>
+	<groupId>book-hexagonal-arch</groupId>
+	<artifactId>book-hexagonal-arch</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>

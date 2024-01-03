@@ -1,18 +1,11 @@
 package infra.secondary.jpa.entities;
 
+import hexagon.Theater;
+import jakarta.persistence.*;
+import lombok.*;
+
 import java.util.Set;
 import java.util.UUID;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -21,28 +14,37 @@ import lombok.Setter;
 @EqualsAndHashCode(of = {"name"})
 public class TheaterEntity {
 
-	@Id
-	private UUID id;
-	@Column(unique = true)
-	private String name;
-	// @Transient
-	// private DateTimeProvider provider = DateTimeProvider.create();
+    @Id
+    private UUID id;
+    @Column(unique = true)
+    private String name;
 
-	@ElementCollection(fetch = FetchType.LAZY)
-	private Set<Integer> seatNumbers;
+    @ElementCollection(fetch = FetchType.LAZY)
+    private Set<Integer> seatNumbers;
 
-	public TheaterEntity(String id, String name, Set<Integer> seats) {
-		this.id = UUID.fromString(id);
-		this.name = name;
-		this.seatNumbers = seats;
-		// this.provider = provider;
-	}
+    TheaterEntity(String id) {
+        this.id = UUID.fromString(id);
+    }
 
-	// TODO: esto va aca? porque tambien esta en el modelo
-	// Set<ShowSeat> seatsForShow(ShowTime show) {
-	// return this.seatNumbers.stream()
-	// .map(s -> new ShowSeat(show, s, this.provider))
-	// .collect(Collectors.toUnmodifiableSet());
-	// }
+    public TheaterEntity(String id, String name, Set<Integer> seats) {
+        this.id = UUID.fromString(id);
+        this.name = name;
+        this.seatNumbers = seats;
+    }
+
+    public Theater toDomain() {
+        return new Theater(this.id.toString(), name, seatNumbers);
+    }
+
+    public static TheaterEntity fromId(String id) {
+        return new TheaterEntity(id);
+    }
+
+    //TODO: eliminar
+/*	Set<ShowSeatEntity> seatsForShow(ShowTimeEntity show) {
+		return this.seatNumbers.stream()
+				.map(s -> new ShowSeatEntity(show, s))
+				.collect(Collectors.toUnmodifiableSet());
+	}*/
 
 }

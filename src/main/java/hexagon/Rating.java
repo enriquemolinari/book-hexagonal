@@ -1,18 +1,20 @@
 package hexagon;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-
-//@Embeddable
-//@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Setter(value = AccessLevel.PRIVATE)
-@Getter(value = AccessLevel.PRIVATE)
 class Rating {
 
 	private int totalUserVotes = 0;
 	private float rateValue = 0;
 	private float totalValue = 0;
+
+	public Rating(int totalUserVotes, float rateValue, float totalValue) {
+		this.totalUserVotes = totalUserVotes;
+		this.rateValue = rateValue;
+		this.totalValue = totalValue;
+	}
+
+	private Rating() {
+
+	}
 
 	public static Rating notRatedYet() {
 		return new Rating();
@@ -45,5 +47,9 @@ class Rating {
 
 	int totalVotes() {
 		return this.totalUserVotes;
+	}
+
+	float totalRateValue() {
+		return this.totalValue;
 	}
 }

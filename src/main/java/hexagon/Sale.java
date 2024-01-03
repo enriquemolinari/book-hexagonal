@@ -1,75 +1,71 @@
 package hexagon;
 
+import hexagon.primary.port.Ticket;
+import jakarta.persistence.Id;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
-import hexagon.primary.port.Ticket;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+public class Sale {
 
-//@Entity
-//@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Setter(value = AccessLevel.PRIVATE)
-@Getter(value = AccessLevel.PRIVATE)
-class Sale {
+    @Id
+    private UUID id;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private long id;
+    @Getter
+    private float total;
+    @Getter
+    private LocalDateTime salesDate;
+    @Getter
+    private User purchaser;
+    @Getter
+    private int pointsWon;
+    @Getter
+    private ShowTime soldShow;
+    private Set<Integer> selectedSeats;
 
-	private float total;
-	private LocalDateTime salesDate;
+    public Sale(float totalAmount, User userThatPurchased, ShowTime soldShow,
+                int pointsWon, Set<Integer> selectedSeats) {
+        this.id = UUID.randomUUID();
+        this.total = totalAmount;
+        this.purchaser = userThatPurchased;
+        this.soldShow = soldShow;
+        this.selectedSeats = selectedSeats;
+        this.salesDate = LocalDateTime.now();
+        this.pointsWon = pointsWon;
+        userThatPurchased.newPurchase(this, pointsWon);
+    }
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "id_user")
-	private User purchaser;
+    public boolean hasTotalOf(float aTotal) {
+        return this.total == aTotal;
+    }
 
-	private int pointsWon;
+    private String formattedSalesDate() {
+        return new FormattedDateTime(salesDate).toString();
+    }
 
-	@ManyToOne
-	@JoinColumn(name = "id_showtime")
-	private ShowTime soldShow;
+    boolean purchaseBy(User aUser) {
+        return this.purchaser.equals(aUser);
+    }
 
-	private Set<Integer> selectedSeats;
+    List<Integer> confirmedSeatNumbers() {
+        return this.selectedSeats.stream().toList();
+    }
 
-	public Sale(float totalAmount, User userThatPurchased, ShowTime soldShow,
-			int pointsWon, Set<Integer> selectedSeats) {
-		this.total = totalAmount;
-		this.purchaser = userThatPurchased;
-		this.soldShow = soldShow;
-		this.selectedSeats = selectedSeats;
-		this.salesDate = LocalDateTime.now();
-		this.pointsWon = pointsWon;
-		userThatPurchased.newPurchase(this, pointsWon);
-	}
+    public Ticket ticket() {
+        return new Ticket(total, pointsWon, formattedSalesDate(),
+                purchaser.userName(), confirmedSeatNumbers(),
+                soldShow.movieName(), soldShow.startDateTime());
+    }
 
-	public boolean hasTotalOf(float aTotal) {
-		return this.total == aTotal;
-	}
+    public String id() {
+        return this.id.toString();
+    }
 
-	private String formattedSalesDate() {
-		return new FormattedDateTime(salesDate).toString();
-	}
-
-	boolean purchaseBy(User aUser) {
-		return this.purchaser.equals(aUser);
-	}
-
-	List<Integer> confirmedSeatNumbers() {
-		return this.selectedSeats.stream().toList();
-	}
-
-	public Ticket ticket() {
-		return new Ticket(total, pointsWon, formattedSalesDate(),
-				purchaser.userName(), confirmedSeatNumbers(),
-				soldShow.movieName(), soldShow.startDateTime());
-	}
+    public Set<Integer> seats() {
+        return Collections.unmodifiableSet(this.selectedSeats);
+    }
 }

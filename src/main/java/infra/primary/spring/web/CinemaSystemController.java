@@ -76,12 +76,12 @@ public class CinemaSystemController {
 
 	@GetMapping("/shows/{id}")
 	public ResponseEntity<DetailedShowInfo> showDetail(
-			@PathVariable Long id) {
+			@PathVariable String id) {
 		return ResponseEntity.ok(cinema.show(id));
 	}
 
 	@PostMapping("/users/register")
-	public ResponseEntity<Long> userRegistration(
+	public ResponseEntity<String> userRegistration(
 			@RequestBody UserRegistrationRequest request) {
 
 		return ResponseEntity
@@ -118,7 +118,7 @@ public class CinemaSystemController {
 
 	@GetMapping("/movies/{id}/rate")
 	public ResponseEntity<List<UserMovieRate>> pagedRatesOfOrderedDate(
-			@PathVariable Long id,
+			@PathVariable String id,
 			@RequestParam(defaultValue = "1") int page) {
 		return ResponseEntity.ok(cinema.pagedRatesOfOrderedDate(id, page));
 	}
@@ -150,7 +150,7 @@ public class CinemaSystemController {
 	@PostMapping("/shows/{showId}/reserve")
 	public ResponseEntity<DetailedShowInfo> makeReservation(
 			@CookieValue(required = false) String token,
-			@PathVariable Long showId, @RequestBody Set<Integer> seats) {
+			@PathVariable String showId, @RequestBody Set<Integer> seats) {
 
 		var showInfo = ifAuthenticatedDo(token, userId -> {
 			return this.cinema.reserve(userId, showId,
@@ -163,7 +163,7 @@ public class CinemaSystemController {
 	@PostMapping("/shows/{showId}/pay")
 	public ResponseEntity<Ticket> payment(
 			@CookieValue(required = false) String token,
-			@PathVariable Long showId, @RequestBody PaymentRequest payment) {
+			@PathVariable String showId, @RequestBody PaymentRequest payment) {
 
 		var ticket = ifAuthenticatedDo(token, userId -> {
 			return this.cinema.pay(userId, showId,
@@ -178,7 +178,7 @@ public class CinemaSystemController {
 	@PostMapping("/movies/{movieId}/rate")
 	public ResponseEntity<UserMovieRate> rateMovie(
 			@CookieValue(required = false) String token,
-			@PathVariable Long movieId, @RequestBody RateRequest rateRequest) {
+			@PathVariable String movieId, @RequestBody RateRequest rateRequest) {
 
 		var userMovieRated = ifAuthenticatedDo(token, userId -> {
 			return this.cinema.rateMovieBy(userId, movieId,
@@ -188,10 +188,9 @@ public class CinemaSystemController {
 		return ResponseEntity.ok(userMovieRated);
 	}
 
-	private <S> S ifAuthenticatedDo(String token, Function<Long, S> method) {
+	private <S> S ifAuthenticatedDo(String token, Function<String, S> method) {
 		var userId = Optional.ofNullable(token).map(tk -> {
-			var uid = this.cinema.userIdFrom(tk);
-			return uid;
+			return this.cinema.userIdFrom(tk);
 		}).orElseThrow(() -> new AuthException(
 				AUTHENTICATION_REQUIRED));
 

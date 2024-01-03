@@ -63,8 +63,7 @@ public class ForTests {
 
 	ShowTime createShowTime(ForManagingCreditCardPayments gProvider,
 			ForSendingEmailNotifications eProvider, int pointsToWin) {
-		return new ShowTime(
-				DateTimeProvider.create(), this.createSmallFishMovie(),
+		return new ShowTime(this.createSmallFishMovie(),
 				LocalDateTime.now().plusDays(2), 10f, new Theater("a Theater",
 						Set.of(1, 2, 3, 4, 5, 6), DateTimeProvider.create()),
 				pointsToWin);
@@ -98,8 +97,8 @@ public class ForTests {
 	Token doNothingToken() {
 		return new Token() {
 			@Override
-			public Long verifyAndGetUserIdFrom(String token) {
-				return 0L;
+			public String verifyAndGetUserIdFrom(String token) {
+				return "abc";
 			}
 
 			@Override

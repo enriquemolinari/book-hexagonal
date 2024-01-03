@@ -3,27 +3,13 @@ package hexagon;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import hexagon.primary.port.BusinessException;
 import hexagon.primary.port.UserProfile;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 
-//@Entity
-//@Table(name = "ClientUser")
-//@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Setter(value = AccessLevel.PRIVATE)
-@Getter(value = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"userName"})
 public class User {
 
@@ -33,24 +19,37 @@ public class User {
 	static final String PASSWORDS_MUST_BE_EQUALS = "Passwords must be equals";
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private long id;
-	@Column(unique = true)
+	private UUID id;
 	private String userName;
-	@OneToOne(cascade = CascadeType.PERSIST)
 	private Person person;
 	// password must not escape by any means out of this object
-	@Embedded
+	// DO NOT expose getters
 	private Password password;
-
-	@OneToMany(cascade = CascadeType.PERSIST, mappedBy = "purchaser")
 	private List<Sale> purchases;
-
 	private int points;
+
+	public User(String id, String name, String surname, String email,
+			String userName, String password) {
+		this(id, new Person(name, surname, email), userName, password,
+				password);
+	}
 
 	public User(Person person, String userName, String password,
 			String repeatPassword) {
 		checkPasswordsMatch(password, repeatPassword);
+		this.id = UUID.randomUUID();
+		this.person = person;
+		this.userName = new NotBlankString(userName,
+				INVALID_USERNAME).value();
+		this.password = new Password(password);
+		this.points = 0;
+		this.purchases = new ArrayList<>();
+	}
+
+	User(String id, Person person, String userName, String password,
+			String repeatPassword) {
+		checkPasswordsMatch(password, repeatPassword);
+		this.id = UUID.fromString(id);
 		this.person = person;
 		this.userName = new NotBlankString(userName,
 				INVALID_USERNAME).value();
@@ -111,7 +110,7 @@ public class User {
 		this.purchases.add(sale);
 	}
 
-	String email() {
+	public String email() {
 		return this.person.email();
 	}
 
@@ -119,8 +118,16 @@ public class User {
 		return Map.of("id", this.id);
 	}
 
-	Long id() {
-		return id;
+	public String id() {
+		return id.toString();
+	}
+
+	public String name() {
+		return this.person.name();
+	}
+
+	public String surname() {
+		return this.person.surname();
 	}
 
 	public UserProfile toProfile() {

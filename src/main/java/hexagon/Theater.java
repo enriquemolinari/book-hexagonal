@@ -21,10 +21,14 @@ public class Theater {
 
 	public Theater(String id, String name, Set<Integer> seats,
 			DateTimeProvider provider) {
+		this(id, name, seats);
+		this.provider = provider;
+	}
+
+	public Theater(String id, String name, Set<Integer> seats) {
 		this.id = UUID.fromString(id);
 		this.name = new NotBlankString(name, NAME_INVALID).value();
 		this.seatNumbers = seats;
-		this.provider = provider;
 	}
 
 	public Theater(String name, Set<Integer> seats,

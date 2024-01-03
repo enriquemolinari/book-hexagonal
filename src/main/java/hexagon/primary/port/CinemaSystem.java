@@ -18,7 +18,7 @@ public interface CinemaSystem {
 
 	MovieInfo movie(String id);
 
-	DetailedShowInfo show(Long id);
+	DetailedShowInfo show(String id);
 
 	MovieInfo addNewMovie(String name, int duration,
 			LocalDate releaseDate, String plot, Set<Genre> genres);
@@ -31,35 +31,35 @@ public interface CinemaSystem {
 
 	String addNewTheater(String name, Set<Integer> seatsNumbers);
 
-	ShowInfo addNewShowFor(Long movieId, LocalDateTime startTime,
-			float price, Long theaterId, int pointsToWin);
+	ShowInfo addNewShowFor(String movieId, LocalDateTime startTime,
+			float price, String theaterId, int pointsToWin);
 
-	DetailedShowInfo reserve(Long userId, Long showTimeId,
+	DetailedShowInfo reserve(String userId, String showTimeId,
 			Set<Integer> selectedSeats);
 
-	Ticket pay(Long userId, Long showTimeId, Set<Integer> selectedSeats,
+	Ticket pay(String userId, String showTimeId, Set<Integer> selectedSeats,
 			String creditCardNumber, YearMonth expirationDate,
 			String secturityCode);
 
-	UserMovieRate rateMovieBy(Long userId, Long idMovie, int rateValue,
+	UserMovieRate rateMovieBy(String userId, String idMovie, int rateValue,
 			String comment);
 
-	List<UserMovieRate> pagedRatesOfOrderedDate(Long movieId, int pageNumber);
+	List<UserMovieRate> pagedRatesOfOrderedDate(String movieId, int pageNumber);
 
 	List<MovieInfo> pagedSearchMovieByName(String fullOrPartmovieName,
 			int pageNumber);
 
 	String login(String username, String password);
 
-	Long userIdFrom(String token);
+	String userIdFrom(String token);
 
-	void changePassword(Long userId, String currentPassword,
+	void changePassword(String userId, String currentPassword,
 			String newPassword1,
 			String newPassword2);
 
-	UserProfile profileFrom(Long userId);
+	UserProfile profileFrom(String userId);
 
-	Long registerUser(String name, String surname, String email,
+	String registerUser(String name, String surname, String email,
 			String userName,
 			String password, String repeatPassword);
 
