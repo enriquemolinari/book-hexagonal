@@ -57,7 +57,7 @@ public class Sale {
 
     public Ticket ticket() {
         return new Ticket(total, pointsWon, formattedSalesDate(),
-                purchaser.userName(), confirmedSeatNumbers(),
+                purchaser.getUserName(), confirmedSeatNumbers(),
                 soldShow.movieName(), soldShow.startDateTime());
     }
 

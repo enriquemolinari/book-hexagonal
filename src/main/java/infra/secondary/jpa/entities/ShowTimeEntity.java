@@ -20,11 +20,9 @@ import java.util.stream.Collectors;
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
 public class ShowTimeEntity {
-
     @Id
     private UUID id;
     private LocalDateTime startTime;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_movie")
     private MovieEntity movieToBeScreened;
@@ -32,6 +30,7 @@ public class ShowTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private TheaterEntity screenedIn;
     @OneToMany(mappedBy = "show", cascade = CascadeType.PERSIST)
+    @Setter
     private Set<ShowSeatEntity> seatsForThisShow;
     @Column(name = "pointsToWin")
     private int pointsThatAUserWin;
@@ -45,70 +44,47 @@ public class ShowTimeEntity {
     }
 
     public ShowTimeEntity(String id, MovieEntity movie, LocalDateTime startTime,
-                          float price, TheaterEntity screenedIn, Set<ShowSeatEntity> seats,
-                          int totalPointsToWin) {
-
+                          float price, TheaterEntity screenedIn, int totalPointsToWin) {
         this.id = UUID.fromString(id);
         this.movieToBeScreened = movie;
         this.price = price;
         this.startTime = startTime;
         this.screenedIn = screenedIn;
-        this.seatsForThisShow = seats;
         this.pointsThatAUserWin = totalPointsToWin;
     }
 
     public static ShowTimeEntity fromDomain(ShowTime showTime) {
-        var ss = showTime.seats();
-        var ste = new ShowTimeEntity(showTime.id(),
+        var showSeats = showTime.seats();
+        var showTimeEntity = new ShowTimeEntity(showTime.id(),
                 MovieEntity.fromId(showTime.movieScreened().id()),
                 showTime.startTime(), showTime.price(),
                 new TheaterEntity(showTime.screenedIn().id(),
                         showTime.screenedIn().name(),
-                        showTime.screenedIn().seats()), null, //TODO: sacar ese null
-                showTime.point());
-        var showSeatEntities = ss.stream().map(s -> showSeatToEntity(s, ste)).collect(Collectors.toSet());
-        ste.setSeatsForThisShow(showSeatEntities);
-        return ste;
+                        showTime.screenedIn().seats()), showTime.pointsToEarn());
+        var showSeatEntities = showSeats.stream()
+                .map(showSeat -> showSeatToEntity(showSeat, showTimeEntity)).collect(Collectors.toSet());
+        showTimeEntity.setSeatsForThisShow(showSeatEntities);
+        return showTimeEntity;
     }
 
-    private static ShowSeatEntity showSeatToEntity(ShowSeat s, ShowTimeEntity ste) {
-        var sse = new ShowSeatEntity(s.id(), s.seatNumber(), s.reserved(), s.confirmed(), s.reservedUntil());
-        sse.showEntity(ste);
-        if (s.user() != null) {
-            sse.user(UserEntity.fromDomain(s.user()));
+    private static ShowSeatEntity showSeatToEntity(ShowSeat showSeat, ShowTimeEntity showTimeEntity) {
+        var showSeatEntity = new ShowSeatEntity(showSeat.id(), showSeat.seatNumber(), showSeat.reserved(),
+                showSeat.confirmed(), showSeat.reservedUntil());
+        showSeatEntity.setShow(showTimeEntity);
+        if (showSeat.hasBeenReserveOrConfirm()) {
+            showSeatEntity.setUser(UserEntity.fromDomain(showSeat.user()));
         }
-        return sse;
-    }
-
-    public boolean isStartingAt(LocalDateTime of) {
-        return this.startTime.equals(startTime);
-    }
-
-    int pointsToEarn() {
-        return this.pointsThatAUserWin;
-    }
-
-    public boolean hasSeatNumbered(int aSeatNumber) {
-        return this.seatsForThisShow.stream()
-                .anyMatch(seat -> seat.isSeatNumbered(aSeatNumber));
-    }
-
-    String movieName() {
-        return this.movieToBeScreened.name();
-    }
-
-    String startDateTime() {
-        return this.startTime.toString();
+        return showSeatEntity;
     }
 
     public ShowTime toDomain(Movie movie) {
-        var ss = this.seatsForThisShow.stream().map(sse -> sse.toDomain()).collect(Collectors.toSet());
+        var ss = this.seatsForThisShow.stream().map(ShowSeatEntity::toDomain).collect(Collectors.toSet());
         return new ShowTime(this.id.toString(), DateTimeProvider.create(),
                 movie, this.startTime,
                 this.price, this.screenedIn.toDomain(), this.pointsThatAUserWin, ss);
     }
 
-    public MovieEntity movie() {
-        return this.movieToBeScreened;
+    public Movie movieToBeScreenedToDomain() {
+        return this.movieToBeScreened.toDomain();
     }
 }

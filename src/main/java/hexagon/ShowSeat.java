@@ -1,7 +1,6 @@
 package hexagon;
 
 import hexagon.primary.port.BusinessException;
-import hexagon.primary.port.DateTimeProvider;
 import hexagon.primary.port.Seat;
 
 import java.time.LocalDateTime;
@@ -9,8 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 
 public class ShowSeat {
-
-    static final int MINUTES_TO_KEEP_RESERVATION = 5;
     static final String SEAT_BUSY = "Seat is currently busy";
     static final String SEAT_NOT_RESERVED_OR_ALREADY_CONFIRMED = "The seat cannot be confirmed";
 
@@ -18,11 +15,8 @@ public class ShowSeat {
     private User user;
     private boolean reserved;
     private boolean confirmed;
-    private ShowTime show;
     private LocalDateTime reservedUntil;
-    private Integer seatNumber;
-
-    private DateTimeProvider provider = DateTimeProvider.create();
+    private final Integer seatNumber;
 
     public ShowSeat(String id, User user, Integer seatNumber, boolean reserved, boolean confirmed, LocalDateTime reservedUntil) {
         this.id = UUID.fromString(id);
@@ -33,36 +27,28 @@ public class ShowSeat {
         this.reservedUntil = reservedUntil;
     }
 
-    public ShowSeat(ShowTime s, Integer seatNumber,
-                    DateTimeProvider dateProvider) {
+    public ShowSeat(Integer seatNumber) {
         this.id = UUID.randomUUID();
-        this.show = s;
         this.seatNumber = seatNumber;
-
         this.reserved = false;
         this.confirmed = false;
-        this.provider = dateProvider;
     }
 
-    public void doReserveForUser(User user) {
+    public void doReserveForUser(User user, LocalDateTime until) {
         if (!isAvailable()) {
             throw new BusinessException(SEAT_BUSY);
         }
-
         this.reserved = true;
         this.user = user;
-        this.reservedUntil = provider.now()
-                .plusMinutes(MINUTES_TO_KEEP_RESERVATION);
+        this.reservedUntil = until;
     }
 
     public boolean isBusy() {
         return !isAvailable();
     }
 
-    //TODO: ver este warning en reserved...
     public boolean isAvailable() {
-        return (!reserved || (reserved
-                && LocalDateTime.now().isAfter(this.reservedUntil)))
+        return (!reserved || LocalDateTime.now().isAfter(this.reservedUntil))
                 && !confirmed;
     }
 
@@ -70,7 +56,6 @@ public class ShowSeat {
         if (!isReservedBy(user) || confirmed) {
             throw new BusinessException(SEAT_NOT_RESERVED_OR_ALREADY_CONFIRMED);
         }
-
         this.confirmed = true;
         this.user = user;
     }
@@ -119,19 +104,15 @@ public class ShowSeat {
         return confirmed;
     }
 
-    void showTime(ShowTime showTime) {
-        this.show = showTime;
-    }
-
     public Seat toSeat() {
         return new Seat(seatNumber, isAvailable());
     }
 
-    public ShowTime show() {
-        return this.show;
-    }
-
     public User user() {
         return this.user;
+    }
+
+    public boolean hasBeenReserveOrConfirm() {
+        return this.user != null;
     }
 }

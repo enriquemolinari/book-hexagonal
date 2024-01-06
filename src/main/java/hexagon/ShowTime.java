@@ -13,7 +13,6 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-//TODO: revisar DateTimeProvider...
 public class ShowTime {
 
     static final String START_TIME_MUST_BE_IN_THE_FUTURE = "The show start time must be in the future";
@@ -26,12 +25,7 @@ public class ShowTime {
     @Id
     private UUID id;
     private LocalDateTime startTime;
-
-    @Transient
-    // When hibernate creates an instance of this class, this will be
-    // null if I don't initialize it here.
     private DateTimeProvider timeProvider = DateTimeProvider.create();
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_movie")
     private Movie movieToBeScreened;
@@ -97,24 +91,20 @@ public class ShowTime {
         }
     }
 
-    public boolean isStartingAt(LocalDateTime of) {
-        return this.startTime.equals(startTime);
-    }
-
     private Set<ShowSeat> filterSelectedSeats(Set<Integer> selectedSeats) {
         return this.seatsForThisShow.stream()
                 .filter(seat -> seat.isIncludedIn(selectedSeats))
                 .collect(Collectors.toUnmodifiableSet());
     }
 
-    Set<ShowSeat> reserveSeatsFor(User user, Set<Integer> selectedSeats) {
+    Set<ShowSeat> reserveSeatsFor(User user, Set<Integer> selectedSeats, LocalDateTime reservedUntil) {
         var selection = filterSelectedSeats(selectedSeats);
         checkAllSelectedSeatsAreAvailable(selection);
-        reserveAllSeatsFor(user, selection);
+        reserveAllSeatsFor(user, selection, reservedUntil);
         return selection;
     }
 
-    int pointsToEarn() {
+    public int pointsToEarn() {
         return this.pointsThatAUserWin;
     }
 
@@ -180,8 +170,8 @@ public class ShowTime {
         return seatsToReserve.stream().allMatch(condition);
     }
 
-    private void reserveAllSeatsFor(User user, Set<ShowSeat> selection) {
-        selection.stream().forEach(seat -> seat.doReserveForUser(user));
+    private void reserveAllSeatsFor(User user, Set<ShowSeat> selection, LocalDateTime reservedUntil) {
+        selection.stream().forEach(seat -> seat.doReserveForUser(user, reservedUntil));
     }
 
     private void confirmAllSeatsFor(User user, Set<ShowSeat> selection) {
@@ -201,7 +191,7 @@ public class ShowTime {
     }
 
     String movieName() {
-        return this.movieToBeScreened.name();
+        return this.movieToBeScreened.getName();
     }
 
     String startDateTime() {
@@ -218,7 +208,7 @@ public class ShowTime {
 
     public ShowInfo toShowInfo() {
         return new ShowInfo(this.id(), movieName(),
-                new MovieDurationFormat(movieToBeScreened.duration())
+                new MovieDurationFormat(movieToBeScreened.getDuration())
                         .toString(),
                 startDateTime(),
                 this.price);
@@ -227,13 +217,13 @@ public class ShowTime {
     public DetailedShowInfo toDetailedInfo() {
         return new DetailedShowInfo(this.toShowInfo(),
                 this.screenedIn.name(),
-                this.seatsForThisShow.stream().map(s -> s.toSeat()).toList());
+                this.seatsForThisShow.stream().map(ShowSeat::toSeat).toList());
     }
 
     public List<Integer> confirmedSeatsFrom(User purchaser) {
         return this.seatsForThisShow.stream()
                 .filter(seat -> seat.isConfirmedBy(purchaser))
-                .map(seat -> seat.seatNumber()).toList();
+                .map(ShowSeat::seatNumber).toList();
     }
 
     public LocalDateTime startTime() {
@@ -251,9 +241,4 @@ public class ShowTime {
     public Set<ShowSeat> seats() {
         return this.seatsForThisShow;
     }
-
-    public int point() {
-        return this.pointsThatAUserWin;
-    }
-
 }

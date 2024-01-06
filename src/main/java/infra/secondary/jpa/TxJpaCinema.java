@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-public class TxCinema implements CinemaSystem {
+public class TxJpaCinema implements CinemaSystem {
 
     private static final int NUMBER_OF_RETRIES = 2;
 
@@ -26,10 +26,10 @@ public class TxCinema implements CinemaSystem {
     private DateTimeProvider timeProvider;
     private int pageSize = 10;
 
-    public TxCinema(EntityManagerFactory emf,
-                    ForManagingCreditCardPayments forPayments,
-                    ForSendingEmailNotifications forSendingEmails, Token token,
-                    DateTimeProvider timeProvider) {
+    public TxJpaCinema(EntityManagerFactory emf,
+                       ForManagingCreditCardPayments forPayments,
+                       ForSendingEmailNotifications forSendingEmails, Token token,
+                       DateTimeProvider timeProvider) {
         this.emf = emf;
         this.forPayments = forPayments;
         this.forSendingEmails = forSendingEmails;
@@ -37,10 +37,10 @@ public class TxCinema implements CinemaSystem {
         this.timeProvider = timeProvider;
     }
 
-    public TxCinema(EntityManagerFactory emf,
-                    ForManagingCreditCardPayments forPayments,
-                    ForSendingEmailNotifications forSendingEmails, Token token,
-                    DateTimeProvider timeProvider, int pageSize) {
+    public TxJpaCinema(EntityManagerFactory emf,
+                       ForManagingCreditCardPayments forPayments,
+                       ForSendingEmailNotifications forSendingEmails, Token token,
+                       DateTimeProvider timeProvider, int pageSize) {
         this(emf, forPayments, forSendingEmails, token, timeProvider);
         this.pageSize = pageSize;
     }
@@ -112,7 +112,7 @@ public class TxCinema implements CinemaSystem {
                 new JpaForManagingShows(em),
                 new JpaForManagingUsers(em),
                 this.forPayments, this.forSendingEmails,
-                this.timeProvider, this.token, this.pageSize);
+                this.timeProvider, this.token);
     }
 
     @Override
@@ -191,7 +191,6 @@ public class TxCinema implements CinemaSystem {
             var cinema = createCinema(em);
             return cinema.pagedRatesOfOrderedDate(movieId, pageNumber);
         });
-
     }
 
     @Override

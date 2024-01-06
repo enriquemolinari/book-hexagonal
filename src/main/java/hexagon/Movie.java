@@ -1,6 +1,7 @@
 package hexagon;
 
 import hexagon.primary.port.*;
+import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,13 +20,19 @@ public class Movie {
     static final String GENRES_INVALID = "You must add at least one genre to the movie";
 
     private UUID id;
+
+    @Getter
     private String name;
+    @Getter
     private int duration;
+    @Getter
     private LocalDate releaseDate;
+    @Getter
     private String plot;
     private Set<Genre> genres;
     private List<Actor> actors;
     private List<Person> directors;
+    @Getter
     private List<UserRate> userRates;
     private Rating rating;
     private List<ShowTime> showTimes;
@@ -131,10 +138,6 @@ public class Movie {
         return this.rating.hastTotalVotesOf(votes);
     }
 
-    public String name() {
-        return this.name;
-    }
-
     public MovieShows toMovieShow() {
         return new MovieShows(this.id.toString(), this.name,
                 new MovieDurationFormat(duration).toString(),
@@ -185,10 +188,6 @@ public class Movie {
                 + aString.substring(1).toLowerCase();
     }
 
-    public int duration() {
-        return this.duration;
-    }
-
     LocalDateTime releaseDateAsDateTime() {
         return this.releaseDate.atTime(0, 0);
     }
@@ -197,21 +196,10 @@ public class Movie {
         return this.id.toString();
     }
 
-    public String plot() {
-        return this.plot;
-    }
-
-    public LocalDate releaseDate() {
-        return this.releaseDate;
-    }
-
     public Set<String> genres() {
         return this.genreAsListOfString();
     }
 
-    public List<UserRate> getUserRates() {
-        return this.userRates;
-    }
 
     public int totalUserVotes() {
         return this.rating.totalVotes();

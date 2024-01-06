@@ -1,7 +1,6 @@
 package infra.secondary.jpa.entities;
 
 import hexagon.ShowSeat;
-import hexagon.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -21,11 +19,13 @@ public class ShowSeatEntity {
     @Id
     private UUID id;
     @ManyToOne(fetch = FetchType.LAZY)
+    @Setter
     private UserEntity user;
     private boolean reserved;
     private boolean confirmed;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_show")
+    @Setter
     private ShowTimeEntity show;
     private LocalDateTime reservedUntil;
     private Integer seatNumber;
@@ -41,47 +41,8 @@ public class ShowSeatEntity {
     }
 
     ShowSeat toDomain() {
-        //TODO: aca showSeat no tiene la instancia de ShowTime
-        User user = null;
-        if (this.user != null) {
-            user = this.user.toDomain();
-        }
-        return new ShowSeat(this.id.toString(), user, this.seatNumber, this.reserved, this.confirmed, this.reservedUntil);
-    }
-
-    void showEntity(ShowTimeEntity showEntity) {
-        this.show = showEntity;
-    }
-
-    public ShowSeatEntity(ShowTimeEntity s, Integer seatNumber) {
-        this.id = UUID.randomUUID();
-        this.show = s;
-        this.seatNumber = seatNumber;
-
-        this.reserved = false;
-        this.confirmed = false;
-    }
-
-
-    public boolean isSeatNumbered(int aSeatNumber) {
-        return this.seatNumber.equals(aSeatNumber);
-    }
-
-    public boolean isIncludedIn(Set<Integer> selectedSeats) {
-        return selectedSeats.stream()
-                .anyMatch(ss -> ss.equals(this.seatNumber));
-    }
-
-    int seatNumber() {
-        return seatNumber;
-    }
-
-    UserEntity user() {
-        return user;
-    }
-
-    public void user(UserEntity user) {
-        this.user = user;
+        return new ShowSeat(this.id.toString(), this.user != null ? this.user.toDomain() : null,
+                this.seatNumber, this.reserved, this.confirmed, this.reservedUntil);
     }
 
     public void reserve(LocalDateTime until) {

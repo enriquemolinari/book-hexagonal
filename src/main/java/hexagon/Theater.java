@@ -1,62 +1,46 @@
 package hexagon;
 
+import lombok.EqualsAndHashCode;
+
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import hexagon.primary.port.DateTimeProvider;
-import lombok.EqualsAndHashCode;
-
 @EqualsAndHashCode(of = {"name"})
 public class Theater {
 
-	static final String NAME_INVALID = "Theater name cannot be blank";
+    static final String NAME_INVALID = "Theater name cannot be blank";
 
-	private UUID id;
-	private String name;
-	private DateTimeProvider provider = DateTimeProvider.create();
+    private final UUID id;
+    private final String name;
+    private final Set<Integer> seatNumbers;
 
-	private Set<Integer> seatNumbers;
+    public Theater(String id, String name, Set<Integer> seats) {
+        this.id = UUID.fromString(id);
+        this.name = new NotBlankString(name, NAME_INVALID).value();
+        this.seatNumbers = seats;
+    }
 
-	public Theater(String id, String name, Set<Integer> seats,
-			DateTimeProvider provider) {
-		this(id, name, seats);
-		this.provider = provider;
-	}
+    public Theater(String name, Set<Integer> seats) {
+        this(UUID.randomUUID().toString(), name, seats);
+    }
 
-	public Theater(String id, String name, Set<Integer> seats) {
-		this.id = UUID.fromString(id);
-		this.name = new NotBlankString(name, NAME_INVALID).value();
-		this.seatNumbers = seats;
-	}
+    Set<ShowSeat> seatsForShow(ShowTime show) {
+        return this.seatNumbers.stream()
+                .map(ShowSeat::new)
+                .collect(Collectors.toUnmodifiableSet());
+    }
 
-	public Theater(String name, Set<Integer> seats,
-			DateTimeProvider provider) {
-		this(UUID.randomUUID().toString(), name, seats,
-				provider);
-	}
+    public String name() {
+        return name;
+    }
 
-	public Theater(String name, Set<Integer> seats) {
-		this(UUID.randomUUID().toString(), name, seats,
-				DateTimeProvider.create());
-	}
+    public String id() {
+        return id.toString();
+    }
 
-	Set<ShowSeat> seatsForShow(ShowTime show) {
-		return this.seatNumbers.stream()
-				.map(s -> new ShowSeat(show, s, this.provider))
-				.collect(Collectors.toUnmodifiableSet());
-	}
-
-	public String name() {
-		return name;
-	}
-
-	public String id() {
-		return id.toString();
-	}
-
-	public Set<Integer> seats() {
-		return Collections.unmodifiableSet(this.seatNumbers);
-	}
+    public Set<Integer> seats() {
+        return Collections.unmodifiableSet(this.seatNumbers);
+    }
 }

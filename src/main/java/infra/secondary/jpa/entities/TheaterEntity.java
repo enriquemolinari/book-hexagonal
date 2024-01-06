@@ -22,8 +22,9 @@ public class TheaterEntity {
     @ElementCollection(fetch = FetchType.LAZY)
     private Set<Integer> seatNumbers;
 
-    TheaterEntity(String id) {
-        this.id = UUID.fromString(id);
+    public static TheaterEntity fromDomain(Theater theater) {
+        return new TheaterEntity(theater.id(), theater.name(),
+                theater.seats());
     }
 
     public TheaterEntity(String id, String name, Set<Integer> seats) {
@@ -35,16 +36,4 @@ public class TheaterEntity {
     public Theater toDomain() {
         return new Theater(this.id.toString(), name, seatNumbers);
     }
-
-    public static TheaterEntity fromId(String id) {
-        return new TheaterEntity(id);
-    }
-
-    //TODO: eliminar
-/*	Set<ShowSeatEntity> seatsForShow(ShowTimeEntity show) {
-		return this.seatNumbers.stream()
-				.map(s -> new ShowSeatEntity(show, s))
-				.collect(Collectors.toUnmodifiableSet());
-	}*/
-
 }

@@ -3,6 +3,7 @@ package hexagon.secondary.port;
 import hexagon.Movie;
 import hexagon.UserRate;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 //TODO: Definir paquete donde poner lo compartido entre los puertos y el hexagon
@@ -28,12 +29,12 @@ public interface ForManagingMovies {
     List<Movie> pagedSearchMovieByName(String fullOrPartmovieName,
                                        int pageNumber);
 
-    //TODO: no queda legible esta API...
-    //deberia pasar el idMovie y luego el nuevo valor, el coment, el nuevo valor total?
-    void rateMovie(Movie movie);
+    void updateRating(Movie movie);
 
     List<UserRate> pagedRatesOrderedByDate(String movieId, int pageNumber);
 
     boolean doesThisUserRateTheMovie(String userId,
                                      String movieId);
+
+    List<Movie> moviesWithShowsUntil(LocalDateTime untilTo);
 }

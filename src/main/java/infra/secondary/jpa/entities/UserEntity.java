@@ -1,7 +1,6 @@
 package infra.secondary.jpa.entities;
 
 import hexagon.User;
-import hexagon.primary.port.BusinessException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,8 +28,21 @@ public class UserEntity {
 
     @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "purchaser")
     private List<SaleEntity> purchases;
-
+    @Setter
     private int points;
+
+    public static UserEntity fromDomainWithPassword(User user, String password) {
+        return new UserEntity(user.id(), user.name(), user.surname(),
+                user.email(), user.getUserName(), password);
+    }
+
+    public static UserEntity fromDomain(User user) {
+        return new UserEntity(user.id(), user.name(), user.surname(),
+                user.email(), user.getUserName(), null /*
+         * password not changed from
+         * here
+         */);
+    }
 
     public UserEntity(String id, String name, String surname,
                       String email, String userName, String password) {
@@ -52,36 +64,11 @@ public class UserEntity {
         return new UserEntity(UUID.fromString(id));
     }
 
-    // TODO: ver que hacer con esto...
-    void newEarnedPoints(int points) {
-        if (points <= 0) {
-            throw new BusinessException("points must be greater than zero");
-        }
-        this.points += points;
-    }
-
-    public boolean hasPoints(int points) {
-        return this.points == points;
-    }
-
     public String userName() {
         return userName;
     }
 
-    public boolean hasName(String aName) {
-        return this.name.equals(aName);
-    }
-
-    public boolean hasSurname(String aSurname) {
-        return this.surname.equals(aSurname);
-    }
-
-    public boolean hasUsername(String aUserName) {
-        return this.userName.equals(aUserName);
-    }
-
-    void newPurchase(SaleEntity sale, int pointsWon) {
-        this.newEarnedPoints(pointsWon);
+    public void addPurchase(SaleEntity sale) {
         this.purchases.add(sale);
     }
 
@@ -104,13 +91,5 @@ public class UserEntity {
 
     public void newPassword(String newPassword) {
         this.password = newPassword;
-    }
-
-    public static UserEntity fromDomain(User user) {
-        return new UserEntity(user.id(), user.name(), user.surname(),
-                user.email(), user.userName(), null /*
-         * password not changed from
-         * here
-         */);
     }
 }

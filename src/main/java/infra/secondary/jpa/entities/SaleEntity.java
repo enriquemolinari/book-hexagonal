@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,6 +22,7 @@ public class SaleEntity {
     private LocalDateTime salesDate;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_user")
+    @Setter
     private UserEntity purchaser;
     private int pointsWon;
     @ManyToOne
@@ -43,22 +43,5 @@ public class SaleEntity {
         this.selectedSeats = selectedSeats;
         this.salesDate = LocalDateTime.now();
         this.pointsWon = pointsWon;
-    }
-
-    public boolean hasTotalOf(float aTotal) {
-        return this.total == aTotal;
-    }
-
-    boolean purchaseBy(UserEntity aUser) {
-        return this.purchaser.equals(aUser);
-    }
-
-    List<Integer> confirmedSeatNumbers() {
-        return this.selectedSeats.stream().toList();
-    }
-
-    public void purchasedBy(UserEntity userEntity) {
-        this.purchaser = userEntity;
-        userEntity.newPurchase(this, pointsWon);
     }
 }

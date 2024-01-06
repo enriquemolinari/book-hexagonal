@@ -1,9 +1,10 @@
 package hexagon.secondary.port;
 
-import hexagon.*;
+import hexagon.Sale;
+import hexagon.ShowSeat;
+import hexagon.ShowTime;
+import hexagon.Theater;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 public interface ForManagingShows {
@@ -12,8 +13,6 @@ public interface ForManagingShows {
     Theater theaterBy(String theaterId);
 
     void newShow(ShowTime showTime);
-
-    List<Movie> showsUntil(LocalDateTime untilTo);
 
     ShowTime showTimeBy(String showTimeId);
 

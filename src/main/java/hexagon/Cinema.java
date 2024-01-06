@@ -2,85 +2,62 @@ package hexagon;
 
 import hexagon.primary.port.*;
 import hexagon.secondary.port.*;
-import jakarta.persistence.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 public class Cinema implements CinemaSystem {
+    static final int MINUTES_TO_KEEP_RESERVATION = 5;
     static final String USER_NAME_ALREADY_EXISTS = "userName already exists";
     static final String MOVIE_ID_DOES_NOT_EXISTS = "Movie ID not found";
+    //TODO: ver que hacemos con estas constantes que no se usan... donde esta esta logica?
     static final String SHOW_TIME_ID_NOT_EXISTS = "Show ID not found";
     static final String USER_ID_NOT_EXISTS = "User not registered";
     static final String CREDIT_CARD_DEBIT_HAS_FAILED = "Credit card debit have failed";
     static final String USER_HAS_ALREADY_RATE = "The user has already rate the movie";
     static final String PAGE_NUMBER_MUST_BE_GREATER_THAN_ZERO = "page number must be greater than zero";
-    private static final int DEFAULT_PAGE_SIZE = 20;
     public static final String USER_OR_PASSWORD_ERROR = "Invalid username or password";
 
-    private EntityManagerFactory emf;
     private ForManagingCreditCardPayments paymentGateway;
     private ForSendingEmailNotifications emailProvider;
     private EntityManager em;
-    private int pageSize;
     private DateTimeProvider dateTimeProvider;
     private Token token;
     private ForManagingMovies forManagingMovies;
     private ForManagingShows forManagingShows;
     private ForManagingUsers forManagingUsers;
 
-    // TODO: fix this, sacar emf
     public Cinema(ForManagingMovies managingMovies,
                   ForManagingShows managingShows,
                   ForManagingUsers managingUsers,
                   ForManagingCreditCardPayments paymentGateway,
                   ForSendingEmailNotifications emailProvider,
                   DateTimeProvider provider,
-                  Token token,
-                  // TODO: sacar pageSize...
-                  int pageSize) {
+                  Token token) {
         this.forManagingMovies = managingMovies;
         this.forManagingShows = managingShows;
         this.forManagingUsers = managingUsers;
-        this.emf = null;
         this.paymentGateway = paymentGateway;
         this.emailProvider = emailProvider;
         this.token = token;
-        this.pageSize = pageSize;
         this.dateTimeProvider = provider;
     }
 
-    public Cinema(EntityManagerFactory emf,
-                  ForManagingCreditCardPayments paymentGateway,
+    //TODO: borrar
+    public Cinema(ForManagingCreditCardPayments paymentGateway,
                   ForSendingEmailNotifications emailProvider,
                   DateTimeProvider provider,
-                  Token token,
-                  int pageSize) {
-        this.emf = emf;
+                  Token token) {
         this.paymentGateway = paymentGateway;
         this.emailProvider = emailProvider;
         this.token = token;
-        this.pageSize = pageSize;
         this.dateTimeProvider = provider;
-    }
-
-    public Cinema(EntityManagerFactory emf,
-                  ForManagingCreditCardPayments paymentGateway,
-                  ForSendingEmailNotifications emailProvider, Token token,
-                  int pageSize) {
-        this(emf, paymentGateway, emailProvider, DateTimeProvider.create(),
-                token, pageSize);
-    }
-
-    public Cinema(EntityManagerFactory emf,
-                  ForManagingCreditCardPayments paymentGateway,
-                  ForSendingEmailNotifications emailProvider, Token token) {
-        this(emf, paymentGateway, emailProvider, DateTimeProvider.create(),
-                token, DEFAULT_PAGE_SIZE);
     }
 
     @Override
@@ -89,17 +66,9 @@ public class Cinema implements CinemaSystem {
     }
 
     private List<MovieShows> movieShowsUntil(LocalDateTime untilTo) {
-        var movies = forManagingShows.showsUntil(untilTo);
-        // var query = em.createQuery(
-        // "from Movie m "
-        // + "join fetch m.showTimes s join fetch s.screenedIn "
-        // + "where s.startTime >= ?1 and s.startTime <= ?2 "
-        // + "order by m.name asc",
-        // Movie.class).setParameter(1, LocalDateTime.now())
-        // .setParameter(2, untilTo);
-
+        var movies = forManagingMovies.moviesWithShowsUntil(untilTo);
         return movies.stream()
-                .map(movieShow -> movieShow.toMovieShow())
+                .map(Movie::toMovieShow)
                 .toList();
     }
 
@@ -176,8 +145,8 @@ public class Cinema implements CinemaSystem {
                                     Set<Integer> selectedSeats) {
         var showTime = forManagingShows.showTimeBy(showTimeId);
         var user = forManagingUsers.userById(userId);
-        //TODO: implementar esto...  los asientos son los que deberia persistir...
-        var selectedShowSeats = showTime.reserveSeatsFor(user, selectedSeats);
+        var selectedShowSeats = showTime.reserveSeatsFor(user, selectedSeats,
+                this.dateTimeProvider.now().plusMinutes(MINUTES_TO_KEEP_RESERVATION));
         forManagingShows.reserve(selectedShowSeats);
         return showTime.toDetailedInfo();
     }
@@ -233,7 +202,7 @@ public class Cinema implements CinemaSystem {
         var user = forManagingUsers.userById(userId);
         var movie = forManagingMovies.movieBy(movieId);
         var userRate = movie.rateBy(user, rateValue, comment);
-        forManagingMovies.rateMovie(movie);
+        forManagingMovies.updateRating(movie);
         return userRate.toUserMovieRate();
     }
 
@@ -265,28 +234,11 @@ public class Cinema implements CinemaSystem {
     private void sendNewSaleEmailToTheUser(Set<Integer> selectedSeats,
                                            ShowTime showTime, User user, float totalAmount) {
         var emailTemplate = new NewSaleEmailTemplate(totalAmount,
-                user.userName(), selectedSeats, showTime.movieName(),
+                user.getUserName(), selectedSeats, showTime.movieName(),
                 showTime.startDateTime());
 
         this.emailProvider.send(user.email(), emailTemplate.subject(),
                 emailTemplate.body());
-    }
-
-    private User userBy(String userId) {
-        return findByIdOrThrows(User.class, userId, USER_ID_NOT_EXISTS);
-    }
-
-    private ShowTime showTimeBy(String id) {
-        return findByIdOrThrows(ShowTime.class, id, SHOW_TIME_ID_NOT_EXISTS);
-    }
-
-    <T> T findByIdOrThrows(Class<T> entity, String id, String msg) {
-        var e = em.find(entity, id);
-        if (e == null) {
-            throw new BusinessException(msg);
-        }
-
-        return e;
     }
 
     @Override
@@ -347,47 +299,6 @@ public class Cinema implements CinemaSystem {
 
     private List<MovieInfo> moviesToMovieInfo(List<Movie> movies) {
         return movies.stream().map(m -> m.toInfo()).toList();
-    }
-
-    // TODO: sacar de aca...
-    private <T> T inTx(Function<EntityManager, T> toExecute) {
-        em = emf.createEntityManager();
-        var tx = em.getTransaction();
-
-        try {
-            tx.begin();
-
-            T t = toExecute.apply(em);
-            tx.commit();
-
-            return t;
-        } catch (Exception e) {
-            tx.rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-    // TODO: sacar...
-    private <T> T inTxWithRetriesOnConflict(
-            Function<EntityManager, T> toExecute,
-            int retriesNumber) {
-        int retries = 0;
-
-        while (retries < retriesNumber) {
-            try {
-                return inTx(toExecute);
-                // There is no a great way in JPA to detect a constraint
-                // violation. I use RollbackException and retries one more
-                // time for specific use cases
-            } catch (RollbackException e) {
-                // jakarta.persistence.RollbackException
-                retries++;
-            }
-        }
-        throw new BusinessException(
-                "Trasaction could not be completed due to concurrency conflic");
     }
 
     // DONE
