@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
+@Table(name = "movie")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
@@ -116,7 +117,7 @@ public class MovieEntity {
                 this.releaseDate,
                 genresToDomain(), toActors(), toDirectors(),
                 this.totalUserVotes, this.rateValue, this.totalValue);
-        var showTimes = this.showTimes.stream().map(st -> st.toDomain(movie)).toList();
+        var showTimes = this.showTimes.stream().map(st -> st.toDomain(movie)).collect(Collectors.toList());
         movie.showTimes(showTimes);
         return movie;
     }
@@ -133,7 +134,7 @@ public class MovieEntity {
         this.totalValue = totalValue;
     }
 
-    public void addUserRateEntity(List<UserRateEntity> ure) {
-        this.userRates.addAll(ure);
+    public void addUserRateEntity(List<UserRateEntity> userRateEntityList) {
+        this.userRates.addAll(userRateEntityList);
     }
 }

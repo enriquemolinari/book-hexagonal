@@ -12,7 +12,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TokenTest {
+public class ForGeneratingTokensTest {
 
     private SecretKey key;
     private String encodedKey;
@@ -26,7 +26,7 @@ public class TokenTest {
 
     @Test
     public void validToken() {
-        var token = new PasetoToken(() -> LocalDateTime.now(), encodedKey,
+        var token = new PasetoForGeneratingTokens(() -> LocalDateTime.now(), encodedKey,
                 60 * 1000);
         var stringToken = token.tokenFrom(Map.of("id", "1"));
         assertEquals("1", token.verifyAndGetUserIdFrom(stringToken));
@@ -34,7 +34,7 @@ public class TokenTest {
 
     @Test
     public void expiredToken() {
-        var token = new PasetoToken(() -> LocalDateTime.now().minusMinutes(5),
+        var token = new PasetoForGeneratingTokens(() -> LocalDateTime.now().minusMinutes(5),
                 encodedKey,
                 60 * 1000);
         var stringToken = token.tokenFrom(Map.of("id", "1"));
@@ -44,6 +44,6 @@ public class TokenTest {
             fail("I have obtained the user id from an expired token");
         });
 
-        assertEquals(PasetoToken.INVALID_TOKEN, e.getMessage());
+        assertEquals(PasetoForGeneratingTokens.INVALID_TOKEN, e.getMessage());
     }
 }

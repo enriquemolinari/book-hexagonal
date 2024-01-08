@@ -30,8 +30,7 @@ public class JpaForManagingMovies implements ForManagingMovies {
 
     @Override
     public void newMovie(Movie movie) {
-        MovieEntity entity = MovieEntity.fromDomain(movie);
-        em.persist(entity);
+        em.persist(MovieEntity.fromDomain(movie));
     }
 
     @Override
@@ -98,18 +97,17 @@ public class JpaForManagingMovies implements ForManagingMovies {
                 MovieEntity.class);
         q.setFirstResult((pageNumber - 1) * this.pageSize);
         q.setMaxResults(this.pageSize);
-
         return movieEntitiesToDomain(q);
     }
 
     @Override
     public void updateRating(Movie movie) {
-        var me = em.getReference(MovieEntity.class,
+        var movieEntity = em.getReference(MovieEntity.class,
                 UUID.fromString(movie.id()));
-        me.addUserRateEntity(movie.getUserRates().stream()
+        movieEntity.addUserRateEntity(movie.getUserRates().stream()
                 .map(UserRateEntity::fromDomain)
                 .toList());
-        me.newRateValues(movie.totalUserVotes(), movie.currentRateValue(),
+        movieEntity.newRateValues(movie.totalUserVotes(), movie.currentRateValue(),
                 movie.totalRate());
     }
 
@@ -124,7 +122,7 @@ public class JpaForManagingMovies implements ForManagingMovies {
         q.setParameter(1, UUID.fromString(movieId));
         q.setFirstResult((pageNumber - 1) * this.pageSize);
         q.setMaxResults(this.pageSize);
-        return q.getResultList().stream().map(ur -> ur.toDomain()).toList();
+        return q.getResultList().stream().map(UserRateEntity::toDomain).toList();
     }
 
     @Override

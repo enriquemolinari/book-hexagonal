@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
-@Table(uniqueConstraints = {
+@Table(name = "userrate", uniqueConstraints = {
         @UniqueConstraint(name = "USER_CANT_RATE_A_MOVIE_MORE_THAN_ONCE", columnNames = {
                 "movie_id", "user_id"})})
 public class UserRateEntity {

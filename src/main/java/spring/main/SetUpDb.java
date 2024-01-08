@@ -17,6 +17,7 @@ public class SetUpDb {
     public static final String SCHOOL_MOVIE_ID = "3c608ba1-1aa5-4f85-9dc6-e0fe4fa4cc0c";
     public static final String SMALL_FISH_MOVIE_ID = "cf48c83d-9444-421a-8726-89fd51e7c843";
     public static final String SHOW_SMAL_FISH_ONE_ID = "acf40a5e-3440-4e5e-b979-b0844aabbb56";
+    public static final String USER_ENRIQUE_ID = "acf40a5e-3440-4e5e-b979-b0844aabbb52";
 
     private final EntityManagerFactory emf;
 
@@ -57,7 +58,7 @@ public class SetUpDb {
                             + "to elementary school kids",
                     109, LocalDate.now(), Set.of(Genre.COMEDY.toString(), Genre.ACTION.toString()),
                     List.of(jakeActor, joshActor), List.of(colinDirector));
-            var eu = new UserEntity(UUID.randomUUID().toString(), "Enrique", "Molinari",
+            var eu = new UserEntity(USER_ENRIQUE_ID, "Enrique", "Molinari",
                     "enrique.molinari@gmail.com", "emolinari", "123456789012");
             em.persist(eu);
 

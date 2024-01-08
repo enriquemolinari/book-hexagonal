@@ -2,7 +2,6 @@ package hexagon;
 
 import hexagon.primary.port.BusinessException;
 import hexagon.primary.port.UserProfile;
-import jakarta.persistence.Id;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -19,7 +18,6 @@ public class User {
     static final String POINTS_MUST_BE_GREATER_THAN_ZERO = "Points must be greater than zero";
     static final String PASSWORDS_MUST_BE_EQUALS = "Passwords must be equals";
 
-    @Id
     private UUID id;
     @Getter
     private final String userName;

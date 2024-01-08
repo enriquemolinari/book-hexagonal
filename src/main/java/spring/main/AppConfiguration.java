@@ -3,9 +3,9 @@ package spring.main;
 import hexagon.primary.port.CinemaSystem;
 import hexagon.primary.port.DateTimeProvider;
 import infra.secondary.jpa.TxJpaCinema;
-import infra.secondary.mail.TheBestEmailProvider;
-import infra.secondary.payment.PleasePayPaymentProvider;
-import infra.secondary.token.PasetoToken;
+import infra.secondary.mail.TheBestProviderForSendingEmailNotifications;
+import infra.secondary.payment.PleasePayProviderForManagingPayment;
+import infra.secondary.token.PasetoForGeneratingTokens;
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -26,9 +26,9 @@ public class AppConfiguration {
     @Profile("default")
     public CinemaSystem create() {
         addSampleData();
-        return new TxJpaCinema(entityManagerFactory, new PleasePayPaymentProvider(),
-                new TheBestEmailProvider(),
-                new PasetoToken(SECRET), DateTimeProvider.create(), 10 /*
+        return new TxJpaCinema(entityManagerFactory, new PleasePayProviderForManagingPayment(),
+                new TheBestProviderForSendingEmailNotifications(),
+                new PasetoForGeneratingTokens(SECRET), DateTimeProvider.create(), 10 /*
          * page size
          */);
     }
@@ -44,7 +44,7 @@ public class AppConfiguration {
                 },
                 (String to, String subject, String body) -> {
                 },
-                new PasetoToken(ANY_SECRET), DateTimeProvider.create(),
+                new PasetoForGeneratingTokens(ANY_SECRET), DateTimeProvider.create(),
                 2 /*
          * page size
          */);

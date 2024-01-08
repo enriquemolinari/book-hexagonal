@@ -2,21 +2,21 @@ package architecture;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
+import org.junit.jupiter.api.Test;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 public class VerifyArchitectureTest {
 
-    //@Test
-    public void modelShouldOnlyDependOnModelApi() {
+    @Test
+    public void hexagonShouldOnlyDependOnHexagon() {
         JavaClasses importedClasses = new ClassFileImporter().withImportOption(
                         new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
-                .importPackages("model..", "spring..", "main");
-        classes().that().resideInAPackage("model").should()
+                .importPackages("hexagon..", "infra..", "spring..", "javalin..");
+        classes().that().resideInAPackage("hexagon").should()
                 .onlyDependOnClassesThat()
-                .resideInAnyPackage("model.api", "model", "java..", "javax..",
-                        "lombok..",
-                        "jakarta..")
+                .resideInAnyPackage("hexagon..", "java..", "javax..",
+                        "lombok..")
                 .check(importedClasses);
     }
 

@@ -3,7 +3,7 @@ package javalin.web;
 import hexagon.primary.port.DateTimeProvider;
 import infra.primary.javalin.web.CinemaSystemController;
 import infra.secondary.jpa.TxJpaCinema;
-import infra.secondary.token.PasetoToken;
+import infra.secondary.token.PasetoForGeneratingTokens;
 import io.restassured.response.Response;
 import jakarta.persistence.Persistence;
 import org.json.JSONException;
@@ -61,7 +61,7 @@ public class CinemaSystemControllerTest {
                 },
                 (String to, String subject, String body) -> {
                 },
-                new PasetoToken(SECRET), DateTimeProvider.create(), 10);
+                new PasetoForGeneratingTokens(SECRET), DateTimeProvider.create(), 10);
 
         new CinemaSystemController(8080, cinema).start();
     }

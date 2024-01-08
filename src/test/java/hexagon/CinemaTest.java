@@ -1,7 +1,9 @@
 package hexagon;
 
 import hexagon.primary.port.*;
+import infra.secondary.inmemory.HashMapForManagingMovies;
 import infra.secondary.inmemory.HashMapForManagingUsers;
+import infra.secondary.inmemory.HashMapForManangingShows;
 import infra.secondary.jpa.TxJpaCinema;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
@@ -20,8 +22,6 @@ import java.util.Set;
 import static hexagon.ForTests.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-//TODO: estos test pasan a ser del sistema
-// Tendria que hacer ponele test de Cinema mockeando los puertos
 public class CinemaTest {
 
     private static final String JOSEUSER_SURNAME = "aSurname";
@@ -44,15 +44,18 @@ public class CinemaTest {
         emf = Persistence.createEntityManagerFactory("test-derby-cinema");
     }
 
-    @Test
-    public void aShowIsPlayingAt() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(),
-                DateTimeProvider.create(), 10);
+    @ParameterizedTest
+    @MethodSource(value = "createCinema")
+    public void aShowIsPlayingAt(CinemaSystem cinema) {
         var movieInfo = tests.createSuperMovie(cinema);
         String theaterId = createATheater(cinema);
         cinema.addNewShowFor(movieInfo.id(),
                 LocalDateTime.of(LocalDate.now().plusYears(1).getYear(), 10, 10,
+                        13, 30),
+                10f, theaterId, 20);
+        cinema.addNewShowFor(movieInfo.id(),
+                LocalDateTime.of(LocalDate.now().plusYears(2).getYear(),
+                        5, 10,
                         13, 30),
                 10f, theaterId, 20);
         var movieShows = cinema
@@ -62,41 +65,48 @@ public class CinemaTest {
         assertEquals(1, movieShows.size());
         assertEquals("1hr 49mins", movieShows.get(0).duration());
         assertEquals(1, movieShows.get(0).shows().size());
-        assertTrue(movieShows.get(0).shows().get(0).price() == 10f);
-        assertTrue(movieShows.get(0).movieName()
-                .equals(SUPER_MOVIE_NAME));
+        assertEquals(10f, movieShows.get(0).shows().get(0).price());
+        assertEquals(SUPER_MOVIE_NAME, movieShows.get(0).movieName());
+    }
+
+    private static List<CinemaSystem> createCinemaPageSize2() {
+        return createCinema(2, DateTimeProvider.create());
+    }
+
+    private static List<CinemaSystem> createCinemaPageSize1() {
+        return createCinema(1, DateTimeProvider.create());
     }
 
     private static List<CinemaSystem> createCinema() {
+        return createCinema(10, DateTimeProvider.create());
+    }
+
+    private static List<CinemaSystem> createCinemaWithDateTimeProvider() {
+        return createCinema(10, () -> LocalDateTime.now().minusMonths(1));
+    }
+
+    private static List<CinemaSystem> createCinema(int pageSize, DateTimeProvider provider) {
         var tests = new ForTests();
         var emf = Persistence.createEntityManagerFactory("test-derby-cinema");
         return List.of(new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                        tests.doNothingEmailProvider(), tests.doNothingToken(), DateTimeProvider.create(), 10),
-                new Cinema(null, null, new HashMapForManagingUsers(),
+                        tests.doNothingEmailProvider(), tests.doNothingToken(), provider, pageSize),
+                new Cinema(new HashMapForManagingMovies(pageSize), new HashMapForManangingShows(),
+                        new HashMapForManagingUsers(),
                         tests.doNothingPaymentProvider(), tests.doNothingEmailProvider(),
-                        DateTimeProvider.create(), tests.doNothingToken()));
+                        provider, tests.doNothingToken()));
     }
 
-    @Test
-    public void iCanReserveAnExpiredReservation() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(),
-                tests.doNothingToken(),
-                // already in the past
-                () -> LocalDateTime.now().minusMonths(1),
-                10);
-
+    @ParameterizedTest
+    @MethodSource("createCinemaWithDateTimeProvider")
+    public void iCanReserveAnExpiredReservation(CinemaSystem cinema) {
         var movieInfo = tests.createSuperMovie(cinema);
         String theaterId = createATheater(cinema);
-
         var showInfo = cinema.addNewShowFor(movieInfo.id(),
                 LocalDateTime.of(LocalDate.now().plusYears(1).getYear(), 10, 10,
                         13, 30),
                 10f, theaterId, 20);
-
         var joseUserId = registerUserJose(cinema);
         var userId = registerAUser(cinema);
-
         cinema.reserve(joseUserId, showInfo.showId(), Set.of(1, 5));
         // if exception is not thrown it means I was able to make the reservation
         var info = cinema.reserve(userId, showInfo.showId(), Set.of(1, 5));
@@ -117,10 +127,9 @@ public class CinemaTest {
         assertNotNull(cinema.login(JOSEUSER_USERNAME, "1234567Passw"));
     }
 
-    @Test
-    public void reserveSeats() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(), DateTimeProvider.create(), 10);
+    @ParameterizedTest
+    @MethodSource("createCinema")
+    public void reserveSeats(CinemaSystem cinema) {
         var movieInfo = tests.createSuperMovie(cinema);
         String theaterId = createATheater(cinema);
         var showInfo = cinema.addNewShowFor(movieInfo.id(),
@@ -136,10 +145,9 @@ public class CinemaTest {
         assertTrue(info.currentSeats().contains(new Seat(5, false)));
     }
 
-    @Test
-    public void retrieveShow() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(), DateTimeProvider.create(), 10);
+    @ParameterizedTest
+    @MethodSource("createCinema")
+    public void retrieveShow(CinemaSystem cinema) {
         var movieInfo = tests.createSuperMovie(cinema);
         var theaterId = createATheater(cinema);
         var showInfo = cinema.addNewShowFor(movieInfo.id(),
@@ -149,8 +157,8 @@ public class CinemaTest {
         var userId = registerAUser(cinema);
         cinema.reserve(userId, showInfo.showId(), Set.of(1, 5));
         var info = cinema.show(showInfo.showId());
-        assertTrue(info.info().movieName().equals(SUPER_MOVIE_NAME));
-        assertTrue(info.info().movieDuration().equals("1hr 49mins"));
+        assertEquals(SUPER_MOVIE_NAME, info.info().movieName());
+        assertEquals("1hr 49mins", info.info().movieDuration());
         assertTrue(info.currentSeats().contains(new Seat(1, false)));
         assertTrue(info.currentSeats().contains(new Seat(2, true)));
         assertTrue(info.currentSeats().contains(new Seat(3, true)));
@@ -158,10 +166,9 @@ public class CinemaTest {
         assertTrue(info.currentSeats().contains(new Seat(5, false)));
     }
 
-    @Test
-    public void reserveAlreadReservedSeats() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(), DateTimeProvider.create(), 10);
+    @ParameterizedTest
+    @MethodSource("createCinema")
+    public void reserveAlreadReservedSeats(CinemaSystem cinema) {
         var movieInfo = tests.createSuperMovie(cinema);
         var theaterId = createATheater(cinema);
         var showInfo = cinema.addNewShowFor(movieInfo.id(),
@@ -209,11 +216,28 @@ public class CinemaTest {
     }
 
     @Test
-    public void confirmAndPaySeats() {
+    public void jpaConfirmAndPaySeats() {
         var fakePaymenentProvider = tests.fakePaymenentProvider();
         var fakeEmailProvider = tests.fakeEmailProvider();
         var cinema = new TxJpaCinema(emf, fakePaymenentProvider, fakeEmailProvider,
                 tests.doNothingToken(), DateTimeProvider.create(), 10);
+        confirmAndPaySeats(cinema, fakePaymenentProvider, fakeEmailProvider);
+    }
+
+    @Test
+    public void hashMapConfirmAndPaySeats() {
+        var fakePaymenentProvider = tests.fakePaymenentProvider();
+        var fakeEmailProvider = tests.fakeEmailProvider();
+        var cinema = new Cinema(new HashMapForManagingMovies(10), new HashMapForManangingShows(),
+                new HashMapForManagingUsers(),
+                fakePaymenentProvider, fakeEmailProvider,
+                DateTimeProvider.create(), tests.doNothingToken());
+        confirmAndPaySeats(cinema, fakePaymenentProvider, fakeEmailProvider);
+    }
+
+    private void confirmAndPaySeats(CinemaSystem cinema,
+                                    PaymenentProviderFake fakePaymenentProvider,
+                                    EmailProviderFake fakeEmailProvider) {
         var movieInfo = tests.createSuperMovie(cinema);
         var theaterId = createATheater(cinema);
         var showInfo = cinema.addNewShowFor(movieInfo.id(),
@@ -247,204 +271,138 @@ public class CinemaTest {
         assertTrue(detailedShow.currentSeats().contains(new Seat(5, false)));
     }
 
-    @Test
-    public void rateMovie() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(),
-                DateTimeProvider.create(), 10);
-
+    @ParameterizedTest
+    @MethodSource("createCinema")
+    public void rateMovie(CinemaSystem cinema) {
         var movieInfo = tests.createSuperMovie(cinema);
-
         var joseId = registerUserJose(cinema);
-
         var userRate = cinema.rateMovieBy(joseId, movieInfo.id(), 4,
                 "great movie");
-
         assertEquals(JOSEUSER_USERNAME, userRate.username());
         assertEquals(4, userRate.rateValue());
     }
 
-    @Test
-    public void retrieveRatesInvalidPageNumber() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(), DateTimeProvider.create(),
-                10 /* page size */);
+    @ParameterizedTest
+    @MethodSource("createCinema")
+    public void retrieveRatesInvalidPageNumber(CinemaSystem cinema) {
         var e = assertThrows(BusinessException.class, () -> {
             cinema.pagedRatesOfOrderedDate("abc", 0);
         });
-
         assertEquals(Cinema.PAGE_NUMBER_MUST_BE_GREATER_THAN_ZERO,
                 e.getMessage());
     }
 
-    @Test
-    public void retrievePagedRatesFromMovie() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(),
-                DateTimeProvider.create(),
-                2 /* page size */);
-
+    @ParameterizedTest
+    @MethodSource("createCinemaPageSize2")
+    public void retrievePagedRatesFromMovie(CinemaSystem cinema) {
         var movieInfo = tests.createSuperMovie(cinema);
-
         var joseId = registerUserJose(cinema);
         var userId = registerAUser(cinema);
         var antonioId = registerUserAntonio(cinema);
-
         cinema.rateMovieBy(userId, movieInfo.id(), 1, "very bad movie");
         cinema.rateMovieBy(joseId, movieInfo.id(), 2, "bad movie");
         cinema.rateMovieBy(antonioId, movieInfo.id(), 3, "regular movie");
-
         var userRates = cinema.pagedRatesOfOrderedDate(movieInfo.id(), 1);
-
         assertEquals(2, userRates.size());
         assertEquals(ANTONIOUSER_USERNAME, userRates.get(0).username());
         assertEquals(JOSEUSER_USERNAME, userRates.get(1).username());
     }
 
-    @Test
-    public void rateSameMovieByThreeUsers() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(),
-                DateTimeProvider.create(), 10);
-
+    @ParameterizedTest
+    @MethodSource("createCinema")
+    public void rateSameMovieByThreeUsers(CinemaSystem cinema) {
         var movieInfo = tests.createSuperMovie(cinema);
-
         var joseId = registerUserJose(cinema);
         var antonioId = registerUserAntonio(cinema);
         var aUserId = registerAUser(cinema);
-
         cinema.rateMovieBy(joseId, movieInfo.id(), 4,
                 "great movie");
         cinema.rateMovieBy(antonioId, movieInfo.id(), 2,
                 "bad movie");
         cinema.rateMovieBy(aUserId, movieInfo.id(), 5,
                 "fantastic movie");
-
         var movie = cinema.movie(movieInfo.id());
         var listOfRates = cinema.pagedRatesOfOrderedDate(movieInfo.id(), 1);
-
         assertEquals(3, listOfRates.size());
         assertEquals(String.valueOf(3.67f), movie.ratingValue());
     }
 
-    @Test
-    public void retrieveAllPagedRates() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(),
-                DateTimeProvider.create(),
-                2 /* page size */);
-
+    @ParameterizedTest
+    @MethodSource("createCinema")
+    public void retrieveAllPagedRates(CinemaSystem cinema) {
         var superMovieInfo = tests.createSuperMovie(cinema);
         var otherMovieInfo = tests.createOtherSuperMovie(cinema);
-
         var joseId = registerUserJose(cinema);
-
         cinema.rateMovieBy(joseId, superMovieInfo.id(), 1, "very bad movie");
         cinema.rateMovieBy(joseId, otherMovieInfo.id(), 3, "fine movie");
-
         var movies = cinema.pagedMoviesSortedByRate(1);
-
         assertEquals(2, movies.size());
         assertEquals(ForTests.OTHER_SUPER_MOVIE_NAME, movies.get(0).name());
         assertEquals(ForTests.SUPER_MOVIE_NAME, movies.get(1).name());
     }
 
-    @Test
-    public void rateTheSameMovieTwice() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(),
-                DateTimeProvider.create(), 10);
-
+    @ParameterizedTest
+    @MethodSource("createCinema")
+    public void rateTheSameMovieTwice(CinemaSystem cinema) {
         var movieInfo = tests.createSuperMovie(cinema);
         var joseId = registerUserJose(cinema);
-
         cinema.rateMovieBy(joseId, movieInfo.id(), 4, "great movie");
-
         var e = assertThrows(BusinessException.class, () -> {
             cinema.rateMovieBy(joseId, movieInfo.id(), 4, "great movie");
             fail("I was able to rate the same movie twice");
         });
-
         assertEquals(Cinema.USER_HAS_ALREADY_RATE, e.getMessage());
     }
 
-    // TODO: remover la instancia de Cinema una vez que cambie todo
-    // usando parameterizedTest ?
-    @Test
-    public void retrieveMovie() {
-        var txcinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(),
-                DateTimeProvider.create());
-
-        var superMovie = tests.createSuperMovie(txcinema);
-
-        MovieInfo movie = txcinema.movie(superMovie.id());
-
-        assertTrue(movie.actors().size() == 2);
-        assertTrue(movie.directorNames().size() == 1);
-        assertTrue(movie.directorNames().get(0)
-                .equals(SUPER_MOVIE_DIRECTOR_NAME));
+    @ParameterizedTest
+    @MethodSource("createCinema")
+    public void retrieveMovie(CinemaSystem cinema) {
+        var superMovie = tests.createSuperMovie(cinema);
+        MovieInfo movie = cinema.movie(superMovie.id());
+        assertEquals(2, movie.actors().size());
+        assertEquals(1, movie.directorNames().size());
+        assertEquals(SUPER_MOVIE_DIRECTOR_NAME, movie.directorNames().get(0));
         assertTrue(movie.actors()
                 .contains(SUPER_MOVIE_ACTOR_CARLOS));
-        assertTrue(movie.name().equals(SUPER_MOVIE_NAME));
-        assertTrue(movie.plot().equals(SUPER_MOVIE_PLOT));
+        assertEquals(SUPER_MOVIE_NAME, movie.name());
+        assertEquals(SUPER_MOVIE_PLOT, movie.plot());
     }
 
-    @Test
-    public void moviesSortedByReleaseDate() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(),
-                DateTimeProvider.create(), 1);
-
+    @ParameterizedTest
+    @MethodSource("createCinemaPageSize1")
+    public void moviesSortedByReleaseDate(CinemaSystem cinema) {
         tests.createSuperMovie(cinema);
         tests.createOtherSuperMovie(cinema);
-
         var movies = cinema.pagedMoviesSortedByReleaseDate(1);
-
         assertEquals(1, movies.size());
-        assertTrue(
-                movies.get(0).name().equals(ForTests.SUPER_MOVIE_NAME));
+        assertEquals(SUPER_MOVIE_NAME, movies.get(0).name());
     }
 
-    @Test
-    public void retrieveAllMovies() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(),
-                DateTimeProvider.create(), 1);
-
+    @ParameterizedTest
+    @MethodSource("createCinemaPageSize1")
+    public void retrieveAllMovies(CinemaSystem cinema) {
         tests.createSuperMovie(cinema);
         tests.createOtherSuperMovie(cinema);
-
         var movies1 = cinema.pagedMoviesSortedByName(1);
-
         assertEquals(1, movies1.size());
-        assertTrue(movies1.get(0).name().equals(SUPER_MOVIE_NAME));
+        assertEquals(SUPER_MOVIE_NAME, movies1.get(0).name());
         assertEquals(2, movies1.get(0).genres().size());
         assertEquals(2, movies1.get(0).actors().size());
-
         var movies2 = cinema.pagedMoviesSortedByName(2);
-
         assertEquals(1, movies2.size());
-        assertTrue(
-                movies2.get(0).name().equals(ForTests.OTHER_SUPER_MOVIE_NAME));
+        assertEquals(OTHER_SUPER_MOVIE_NAME, movies2.get(0).name());
         assertEquals(2, movies2.get(0).genres().size());
         assertEquals(1, movies2.get(0).actors().size());
     }
 
-    @Test
-    public void searchMovieByName() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(),
-                DateTimeProvider.create(), 10);
-
+    @ParameterizedTest
+    @MethodSource("createCinema")
+    public void searchMovieByName(CinemaSystem cinema) {
         tests.createSuperMovie(cinema);
         tests.createOtherSuperMovie(cinema);
-
         var movies = cinema.pagedSearchMovieByName("another", 1);
-
         assertEquals(1, movies.size());
-        assertTrue(
-                movies.get(0).name().equals(ForTests.OTHER_SUPER_MOVIE_NAME));
+        assertEquals(OTHER_SUPER_MOVIE_NAME, movies.get(0).name());
     }
 
     @Test
@@ -472,24 +430,13 @@ public class CinemaTest {
         assertEquals("Reservation is required before confirm", e.getMessage());
     }
 
-    @Test
-    public void searchMovieByNameNotFound() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(), tests.doNothingToken(),
-                DateTimeProvider.create(), 10);
+    @ParameterizedTest
+    @MethodSource("createCinema")
+    public void searchMovieByNameNotFound(CinemaSystem cinema) {
         tests.createSuperMovie(cinema);
         tests.createOtherSuperMovie(cinema);
         var movies = cinema.pagedSearchMovieByName("not_found_movie", 1);
         assertEquals(0, movies.size());
-    }
-
-    @ParameterizedTest
-    @MethodSource(value = "createCinema")
-    public void userChangePassword(CinemaSystem cinema) {
-        var userId = registerUserJose(cinema);
-
-        cinema.changePassword(userId, JOSEUSER_PASS, "123412341234",
-                "123412341234");
     }
 
     @ParameterizedTest

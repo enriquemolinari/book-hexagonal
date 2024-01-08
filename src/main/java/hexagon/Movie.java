@@ -5,10 +5,7 @@ import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 //TODO: ver donde poner aquellas clases que usan los adaptadores
@@ -32,7 +29,6 @@ public class Movie {
     private Set<Genre> genres;
     private List<Actor> actors;
     private List<Person> directors;
-    @Getter
     private List<UserRate> userRates;
     private Rating rating;
     private List<ShowTime> showTimes;
@@ -61,6 +57,7 @@ public class Movie {
         this.directors = directors;
         this.userRates = new ArrayList<>();
         this.rating = Rating.notRatedYet();
+        this.showTimes = new ArrayList<>();
     }
 
     public Movie(String name, String plot, int duration, LocalDate releaseDate,
@@ -69,14 +66,10 @@ public class Movie {
                 new ArrayList<Person>());
     }
 
-    private <T> void checkCollectionSize(Set<T> collection, String errorMsg) {
-        if (collection.size() == 0) {
-            throw new BusinessException(errorMsg);
-        }
-    }
-
     private void checkGenresAtLeastHasOne(Set<Genre> genres) {
-        checkCollectionSize(genres, GENRES_INVALID);
+        if (genres.isEmpty()) {
+            throw new BusinessException(GENRES_INVALID);
+        }
     }
 
     private void checkDurationGreaterThanZero(int duration) {
@@ -93,8 +86,8 @@ public class Movie {
         return this.name.equals(aName);
     }
 
-    public boolean isNamedAs(Movie aMovie) {
-        return this.name.equals(aMovie.name);
+    public boolean isNamedLike(String fullOrPartialName) {
+        return this.name.contains(fullOrPartialName);
     }
 
     public boolean hasReleaseDateOf(LocalDate aDate) {
@@ -136,6 +129,10 @@ public class Movie {
 
     public boolean hasTotalVotes(int votes) {
         return this.rating.hastTotalVotesOf(votes);
+    }
+
+    public boolean hasBeenRatedByUserWithId(String userId) {
+        return this.userRates.stream().anyMatch(ur -> ur.isRatedBy(userId));
     }
 
     public MovieShows toMovieShow() {
@@ -200,6 +197,13 @@ public class Movie {
         return this.genreAsListOfString();
     }
 
+    public Set<Genre> getGenres() {
+        return Collections.unmodifiableSet(this.genres);
+    }
+
+    public List<UserRate> getUserRates() {
+        return new ArrayList<>(this.userRates);
+    }
 
     public int totalUserVotes() {
         return this.rating.totalVotes();
@@ -215,5 +219,25 @@ public class Movie {
 
     public void showTimes(List<ShowTime> showTimes) {
         this.showTimes = showTimes;
+    }
+
+    public void addShowTime(ShowTime show) {
+        this.showTimes.add(show);
+    }
+
+    public List<Actor> getActors() {
+        return Collections.unmodifiableList(this.actors);
+    }
+
+    public List<Person> getDirectors() {
+        return Collections.unmodifiableList(this.directors);
+    }
+
+    public boolean hasShowsBetween(LocalDateTime from, LocalDateTime until) {
+        return this.showTimes.stream().anyMatch(s -> s.isStartTimeBetween(from, until));
+    }
+
+    public List<ShowTime> showsUntil(LocalDateTime from, LocalDateTime until) {
+        return this.showTimes.stream().filter(s -> s.isStartTimeBetween(from, until)).toList();
     }
 }

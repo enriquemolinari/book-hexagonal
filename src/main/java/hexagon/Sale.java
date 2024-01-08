@@ -1,7 +1,6 @@
 package hexagon;
 
 import hexagon.primary.port.Ticket;
-import jakarta.persistence.Id;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -12,9 +11,7 @@ import java.util.UUID;
 
 public class Sale {
 
-    @Id
     private UUID id;
-
     @Getter
     private float total;
     @Getter

@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
+@Table(name = "theater")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)

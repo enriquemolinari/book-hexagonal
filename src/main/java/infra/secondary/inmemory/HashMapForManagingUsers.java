@@ -9,19 +9,17 @@ import java.util.Map;
 import java.util.Optional;
 
 public class HashMapForManagingUsers implements ForManagingUsers {
-    private Map<String, User> usersById;
-    private Map<String, User> usersByUserName;
-    private Map<String, String> passwords;
+    private final Map<String, User> usersById;
+    private final Map<String, User> usersByUserName;
 
     public HashMapForManagingUsers() {
         this.usersById = new HashMap<>();
-        this.passwords = new HashMap<>();
         this.usersByUserName = new HashMap<>();
     }
 
     @Override
     public void auditSuccessLogin(String userId, LocalDateTime loginDate) {
-        //just do nothing...
+        //not required
     }
 
     @Override
@@ -36,7 +34,6 @@ public class HashMapForManagingUsers implements ForManagingUsers {
     @Override
     public void register(User user, String password) {
         usersById.put(user.id(), user);
-        passwords.put(user.id(), password);
         usersByUserName.put(user.getUserName(), user);
     }
 
@@ -52,6 +49,8 @@ public class HashMapForManagingUsers implements ForManagingUsers {
 
     @Override
     public void changePassword(String userId, String newPassword) {
-        passwords.replace(userId, newPassword);
+        //Implementation not requiered as I'm storing the User instance
+        //And returned as a reference. changePassword method is invoked
+        //on the hexagon and the stored instance updated right the way
     }
 }

@@ -1,7 +1,8 @@
 package hexagon;
 
 import hexagon.primary.port.*;
-import hexagon.secondary.port.ForManagingCreditCardPayments;
+import hexagon.secondary.port.ForGeneratingTokens;
+import hexagon.secondary.port.ForManagingPayments;
 import hexagon.secondary.port.ForSendingEmailNotifications;
 
 import java.time.LocalDate;
@@ -52,7 +53,7 @@ public class ForTests {
         return body.toString();
     }
 
-    ShowTime createShowTime(ForManagingCreditCardPayments gProvider,
+    ShowTime createShowTime(ForManagingPayments gProvider,
                             ForSendingEmailNotifications eProvider, int pointsToWin) {
         return new ShowTime(this.createSmallFishMovie(),
                 LocalDateTime.now().plusDays(2), 10f, new Theater("a Theater",
@@ -80,13 +81,13 @@ public class ForTests {
         };
     }
 
-    ForManagingCreditCardPayments doNothingPaymentProvider() {
+    ForManagingPayments doNothingPaymentProvider() {
         return (creditCardNumber, expire, securityCode, totalAmount) -> {
         };
     }
 
-    Token doNothingToken() {
-        return new Token() {
+    ForGeneratingTokens doNothingToken() {
+        return new ForGeneratingTokens() {
             @Override
             public String verifyAndGetUserIdFrom(String token) {
                 return "abc";
@@ -190,7 +191,7 @@ class EmailProviderFake implements ForSendingEmailNotifications {
     }
 }
 
-class PaymenentProviderFake implements ForManagingCreditCardPayments {
+class PaymenentProviderFake implements ForManagingPayments {
     private String creditCardNumber;
     private YearMonth expire;
     private String securityCode;

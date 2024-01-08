@@ -3,6 +3,7 @@ package infra.secondary.jpa.entities;
 import hexagon.Person;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
+@Table(name = "director")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
@@ -31,6 +33,6 @@ public class DirectorEntity {
     }
 
     Person toDomain() {
-        return new Person(this.name, this.surname, this.email);
+        return new Person(this.id.toString(), this.name, this.surname, this.email);
     }
 }

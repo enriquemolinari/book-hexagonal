@@ -1,199 +1,184 @@
 package infra.primary.spring.web;
 
+import hexagon.primary.port.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import hexagon.primary.port.AuthException;
-import hexagon.primary.port.CinemaSystem;
-import hexagon.primary.port.DetailedShowInfo;
-import hexagon.primary.port.MovieInfo;
-import hexagon.primary.port.MovieShows;
-import hexagon.primary.port.Ticket;
-import hexagon.primary.port.UserMovieRate;
-import hexagon.primary.port.UserProfile;
-
 @RestController
 public class CinemaSystemController {
 
-	public static final String AUTHENTICATION_REQUIRED = "You must be logged in to perform this action...";
-	private static final String TOKEN_COOKIE_NAME = "token";
-	private CinemaSystem cinema;
+    public static final String AUTHENTICATION_REQUIRED = "You must be logged in to perform this action...";
+    private static final String TOKEN_COOKIE_NAME = "token";
+    private CinemaSystem cinema;
 
-	public CinemaSystemController(CinemaSystem cinema) {
-		this.cinema = cinema;
-	}
+    public CinemaSystemController(CinemaSystem cinema) {
+        this.cinema = cinema;
+    }
 
-	// TODO: aca cambio el id LONG a String... probar despues que onda
-	@GetMapping("/movies/{id}")
-	public ResponseEntity<MovieInfo> movieDetail(@PathVariable String id) {
-		return ResponseEntity.ok(cinema.movie(id));
-	}
+    @GetMapping("/movies/{id}")
+    public ResponseEntity<MovieInfo> movieDetail(@PathVariable String id) {
+        return ResponseEntity.ok(cinema.movie(id));
+    }
 
-	@GetMapping("/movies/sorted/rate")
-	public ResponseEntity<List<MovieInfo>> moviesSortedByRate(
-			@RequestParam(defaultValue = "1") int page) {
-		return ResponseEntity.ok(cinema.pagedMoviesSortedByRate(page));
-	}
+    @GetMapping("/movies/sorted/rate")
+    public ResponseEntity<List<MovieInfo>> moviesSortedByRate(
+            @RequestParam(defaultValue = "1") int page) {
+        return ResponseEntity.ok(cinema.pagedMoviesSortedByRate(page));
+    }
 
-	@GetMapping("/movies/search/{fullOrPartialName}")
-	public ResponseEntity<List<MovieInfo>> moviesSearchBy(
-			@PathVariable String fullOrPartialName,
-			@RequestParam(defaultValue = "1") int page) {
-		return ResponseEntity
-				.ok(cinema.pagedSearchMovieByName(fullOrPartialName, page));
-	}
+    @GetMapping("/movies/search/{fullOrPartialName}")
+    public ResponseEntity<List<MovieInfo>> moviesSearchBy(
+            @PathVariable String fullOrPartialName,
+            @RequestParam(defaultValue = "1") int page) {
+        return ResponseEntity
+                .ok(cinema.pagedSearchMovieByName(fullOrPartialName, page));
+    }
 
-	@GetMapping("/movies/sorted/releasedate")
-	public ResponseEntity<List<MovieInfo>> moviesSortedByReleaseDate(
-			@RequestParam(defaultValue = "1") int page) {
-		return ResponseEntity.ok(cinema.pagedMoviesSortedByReleaseDate(page));
-	}
+    @GetMapping("/movies/sorted/releasedate")
+    public ResponseEntity<List<MovieInfo>> moviesSortedByReleaseDate(
+            @RequestParam(defaultValue = "1") int page) {
+        return ResponseEntity.ok(cinema.pagedMoviesSortedByReleaseDate(page));
+    }
 
-	@GetMapping("/movies")
-	public ResponseEntity<List<MovieInfo>> allMovies(
-			@RequestParam(defaultValue = "1") int page) {
-		return ResponseEntity.ok(cinema.pagedMoviesSortedByName(page));
-	}
+    @GetMapping("/movies")
+    public ResponseEntity<List<MovieInfo>> allMovies(
+            @RequestParam(defaultValue = "1") int page) {
+        return ResponseEntity.ok(cinema.pagedMoviesSortedByName(page));
+    }
 
-	@GetMapping("/shows")
-	public List<MovieShows> playingTheseDays() {
-		return cinema.showsUntil(LocalDateTime.now().plusDays(10));
-	}
+    @GetMapping("/shows")
+    public List<MovieShows> playingTheseDays() {
+        return cinema.showsUntil(LocalDateTime.now().plusDays(10));
+    }
 
-	@GetMapping("/shows/{id}")
-	public ResponseEntity<DetailedShowInfo> showDetail(
-			@PathVariable String id) {
-		return ResponseEntity.ok(cinema.show(id));
-	}
+    @GetMapping("/shows/{id}")
+    public ResponseEntity<DetailedShowInfo> showDetail(
+            @PathVariable String id) {
+        return ResponseEntity.ok(cinema.show(id));
+    }
 
-	@PostMapping("/users/register")
-	public ResponseEntity<String> userRegistration(
-			@RequestBody UserRegistrationRequest request) {
+    @PostMapping("/users/register")
+    public ResponseEntity<String> userRegistration(
+            @RequestBody UserRegistrationRequest request) {
 
-		return ResponseEntity
-				.ok(cinema.registerUser(request.name(), request.surname(),
-						request.email(),
-						request.username(), request.password(),
-						request.repeatPassword()));
-	}
+        return ResponseEntity
+                .ok(cinema.registerUser(request.name(), request.surname(),
+                        request.email(),
+                        request.username(), request.password(),
+                        request.repeatPassword()));
+    }
 
-	@GetMapping("/users/profile")
-	public ResponseEntity<UserProfile> userProfile(
-			@CookieValue(required = false) String token) {
+    @GetMapping("/users/profile")
+    public ResponseEntity<UserProfile> userProfile(
+            @CookieValue(required = false) String token) {
 
-		var profile = ifAuthenticatedDo(token, userId -> {
-			return cinema.profileFrom(userId);
-		});
+        var profile = ifAuthenticatedDo(token, userId -> {
+            return cinema.profileFrom(userId);
+        });
 
-		return ResponseEntity.ok(profile);
-	}
+        return ResponseEntity.ok(profile);
+    }
 
-	@PostMapping("/users/changepassword")
-	public ResponseEntity<Void> changePassword(
-			@CookieValue(required = false) String token,
-			@RequestBody ChangePasswordRequest passBody) {
+    @PostMapping("/users/changepassword")
+    public ResponseEntity<Void> changePassword(
+            @CookieValue(required = false) String token,
+            @RequestBody ChangePasswordRequest passBody) {
 
-		ifAuthenticatedDo(token, userId -> {
-			cinema.changePassword(userId, passBody.currentPassword(),
-					passBody.newPassword1(), passBody.newPassword2());
-			return null;
-		});
+        ifAuthenticatedDo(token, userId -> {
+            cinema.changePassword(userId, passBody.currentPassword(),
+                    passBody.newPassword1(), passBody.newPassword2());
+            return null;
+        });
 
-		return ResponseEntity.ok().build();
-	}
+        return ResponseEntity.ok().build();
+    }
 
-	@GetMapping("/movies/{id}/rate")
-	public ResponseEntity<List<UserMovieRate>> pagedRatesOfOrderedDate(
-			@PathVariable String id,
-			@RequestParam(defaultValue = "1") int page) {
-		return ResponseEntity.ok(cinema.pagedRatesOfOrderedDate(id, page));
-	}
+    @GetMapping("/movies/{id}/rate")
+    public ResponseEntity<List<UserMovieRate>> pagedRatesOfOrderedDate(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "1") int page) {
+        return ResponseEntity.ok(cinema.pagedRatesOfOrderedDate(id, page));
+    }
 
-	@PostMapping("/login")
-	public ResponseEntity<UserProfile> login(@RequestBody LoginRequest form) {
-		String token = cinema.login(form.username(), form.password());
-		var profile = cinema.profileFrom(cinema.userIdFrom(token));
+    @PostMapping("/login")
+    public ResponseEntity<UserProfile> login(@RequestBody LoginRequest form) {
+        String token = cinema.login(form.username(), form.password());
+        var profile = cinema.profileFrom(cinema.userIdFrom(token));
 
-		var cookie = ResponseCookie.from(TOKEN_COOKIE_NAME, token)
-				.httpOnly(true).path("/").build();
-		var headers = new HttpHeaders();
-		headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
-		return ResponseEntity.ok().headers(headers).body(profile);
-	}
+        var cookie = ResponseCookie.from(TOKEN_COOKIE_NAME, token)
+                .httpOnly(true).path("/").build();
+        var headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.ok().headers(headers).body(profile);
+    }
 
-	@PostMapping("/logout")
-	public ResponseEntity<Void> logout(
-			@CookieValue(required = false) String token) {
-		return ifAuthenticatedDo(token, (userId) -> {
-			var cookie = ResponseCookie.from(TOKEN_COOKIE_NAME, null)
-					.httpOnly(true).maxAge(0).build();
-			var headers = new HttpHeaders();
-			headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
-			return ResponseEntity.ok().headers(headers).build();
-		});
-	}
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @CookieValue(required = false) String token) {
+        return ifAuthenticatedDo(token, (userId) -> {
+            var cookie = ResponseCookie.from(TOKEN_COOKIE_NAME, null)
+                    .httpOnly(true).maxAge(0).build();
+            var headers = new HttpHeaders();
+            headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
+            return ResponseEntity.ok().headers(headers).build();
+        });
+    }
 
-	@PostMapping("/shows/{showId}/reserve")
-	public ResponseEntity<DetailedShowInfo> makeReservation(
-			@CookieValue(required = false) String token,
-			@PathVariable String showId, @RequestBody Set<Integer> seats) {
+    @PostMapping("/shows/{showId}/reserve")
+    public ResponseEntity<DetailedShowInfo> makeReservation(
+            @CookieValue(required = false) String token,
+            @PathVariable String showId, @RequestBody Set<Integer> seats) {
 
-		var showInfo = ifAuthenticatedDo(token, userId -> {
-			return this.cinema.reserve(userId, showId,
-					seats);
-		});
+        var showInfo = ifAuthenticatedDo(token, userId -> {
+            return this.cinema.reserve(userId, showId,
+                    seats);
+        });
 
-		return ResponseEntity.ok(showInfo);
-	}
+        return ResponseEntity.ok(showInfo);
+    }
 
-	@PostMapping("/shows/{showId}/pay")
-	public ResponseEntity<Ticket> payment(
-			@CookieValue(required = false) String token,
-			@PathVariable String showId, @RequestBody PaymentRequest payment) {
+    @PostMapping("/shows/{showId}/pay")
+    public ResponseEntity<Ticket> payment(
+            @CookieValue(required = false) String token,
+            @PathVariable String showId, @RequestBody PaymentRequest payment) {
 
-		var ticket = ifAuthenticatedDo(token, userId -> {
-			return this.cinema.pay(userId, showId,
-					payment.selectedSeats(), payment.creditCardNumber(),
-					payment.toYearMonth(),
-					payment.secturityCode());
-		});
+        var ticket = ifAuthenticatedDo(token, userId -> {
+            return this.cinema.pay(userId, showId,
+                    payment.selectedSeats(), payment.creditCardNumber(),
+                    payment.toYearMonth(),
+                    payment.secturityCode());
+        });
 
-		return ResponseEntity.ok(ticket);
-	}
+        return ResponseEntity.ok(ticket);
+    }
 
-	@PostMapping("/movies/{movieId}/rate")
-	public ResponseEntity<UserMovieRate> rateMovie(
-			@CookieValue(required = false) String token,
-			@PathVariable String movieId, @RequestBody RateRequest rateRequest) {
+    @PostMapping("/movies/{movieId}/rate")
+    public ResponseEntity<UserMovieRate> rateMovie(
+            @CookieValue(required = false) String token,
+            @PathVariable String movieId, @RequestBody RateRequest rateRequest) {
 
-		var userMovieRated = ifAuthenticatedDo(token, userId -> {
-			return this.cinema.rateMovieBy(userId, movieId,
-					rateRequest.rateValue(), rateRequest.comment());
-		});
+        var userMovieRated = ifAuthenticatedDo(token, userId -> {
+            return this.cinema.rateMovieBy(userId, movieId,
+                    rateRequest.rateValue(), rateRequest.comment());
+        });
 
-		return ResponseEntity.ok(userMovieRated);
-	}
+        return ResponseEntity.ok(userMovieRated);
+    }
 
-	private <S> S ifAuthenticatedDo(String token, Function<String, S> method) {
-		var userId = Optional.ofNullable(token).map(tk -> {
-			return this.cinema.userIdFrom(tk);
-		}).orElseThrow(() -> new AuthException(
-				AUTHENTICATION_REQUIRED));
+    private <S> S ifAuthenticatedDo(String token, Function<String, S> method) {
+        var userId = Optional.ofNullable(token).map(tk -> {
+            return this.cinema.userIdFrom(tk);
+        }).orElseThrow(() -> new AuthException(
+                AUTHENTICATION_REQUIRED));
 
-		return method.apply(userId);
-	}
+        return method.apply(userId);
+    }
 }

@@ -4,7 +4,6 @@ import hexagon.primary.port.BusinessException;
 import hexagon.primary.port.DateTimeProvider;
 import hexagon.primary.port.DetailedShowInfo;
 import hexagon.primary.port.ShowInfo;
-import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,19 +21,13 @@ public class ShowTime {
     private static final int DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE = 10;
     static final String SHOW_START_TIME_MUST_BE_AFTER_MOVIE_RELEASE_DATE = "Show start time must be before movie release date";
 
-    @Id
     private UUID id;
     private LocalDateTime startTime;
     private DateTimeProvider timeProvider = DateTimeProvider.create();
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_movie")
     private Movie movieToBeScreened;
     private float price;
-    @ManyToOne(fetch = FetchType.LAZY)
     private Theater screenedIn;
-    @OneToMany(mappedBy = "show", cascade = CascadeType.PERSIST)
     private Set<ShowSeat> seatsForThisShow;
-    @Column(name = "pointsToWin")
     private int pointsThatAUserWin;
 
     public ShowTime(DateTimeProvider provider, Movie movie,
@@ -179,7 +172,7 @@ public class ShowTime {
     }
 
     private void checkAllSelectedSeatsAreAvailable(Set<ShowSeat> selection) {
-        checkAtLeastOneMatchConditionFor(selection, seat -> seat.isBusy(),
+        checkAtLeastOneMatchConditionFor(selection, ShowSeat::isBusy,
                 SELECTED_SEATS_ARE_BUSY);
     }
 
@@ -240,5 +233,9 @@ public class ShowTime {
 
     public Set<ShowSeat> seats() {
         return this.seatsForThisShow;
+    }
+
+    public boolean isStartTimeBetween(LocalDateTime from, LocalDateTime to) {
+        return this.startTime.isAfter(from) && this.startTime.isBefore(to);
     }
 }

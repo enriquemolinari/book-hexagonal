@@ -2,9 +2,6 @@ package hexagon;
 
 import hexagon.primary.port.*;
 import hexagon.secondary.port.*;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.NonUniqueResultException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,11 +21,10 @@ public class Cinema implements CinemaSystem {
     static final String PAGE_NUMBER_MUST_BE_GREATER_THAN_ZERO = "page number must be greater than zero";
     public static final String USER_OR_PASSWORD_ERROR = "Invalid username or password";
 
-    private ForManagingCreditCardPayments paymentGateway;
+    private ForManagingPayments paymentGateway;
     private ForSendingEmailNotifications emailProvider;
-    private EntityManager em;
     private DateTimeProvider dateTimeProvider;
-    private Token token;
+    private ForGeneratingTokens token;
     private ForManagingMovies forManagingMovies;
     private ForManagingShows forManagingShows;
     private ForManagingUsers forManagingUsers;
@@ -36,27 +32,16 @@ public class Cinema implements CinemaSystem {
     public Cinema(ForManagingMovies managingMovies,
                   ForManagingShows managingShows,
                   ForManagingUsers managingUsers,
-                  ForManagingCreditCardPayments paymentGateway,
+                  ForManagingPayments paymentGateway,
                   ForSendingEmailNotifications emailProvider,
                   DateTimeProvider provider,
-                  Token token) {
+                  ForGeneratingTokens forGeneratingTokens) {
         this.forManagingMovies = managingMovies;
         this.forManagingShows = managingShows;
         this.forManagingUsers = managingUsers;
         this.paymentGateway = paymentGateway;
         this.emailProvider = emailProvider;
-        this.token = token;
-        this.dateTimeProvider = provider;
-    }
-
-    //TODO: borrar
-    public Cinema(ForManagingCreditCardPayments paymentGateway,
-                  ForSendingEmailNotifications emailProvider,
-                  DateTimeProvider provider,
-                  Token token) {
-        this.paymentGateway = paymentGateway;
-        this.emailProvider = emailProvider;
-        this.token = token;
+        this.token = forGeneratingTokens;
         this.dateTimeProvider = provider;
     }
 
@@ -75,11 +60,12 @@ public class Cinema implements CinemaSystem {
     // DONE
     @Override
     public MovieInfo movie(String id) {
-        try {
-            return movieWithActorsById(id);
-        } catch (NonUniqueResultException | NoResultException e) {
-            throw new BusinessException(MOVIE_ID_DOES_NOT_EXISTS);
-        }
+        //TODO: ver como manejar que el id no exista
+        //try {
+        return movieWithActorsById(id);
+        //} catch (NonUniqueResultException | NoResultException e) {
+        //    throw new BusinessException(MOVIE_ID_DOES_NOT_EXISTS);
+        // }
     }
 
     private MovieInfo movieWithActorsById(String id) {
@@ -135,12 +121,12 @@ public class Cinema implements CinemaSystem {
         var theatre = forManagingShows.theaterBy(theaterId);
         var showTime = new ShowTime(movie, startTime, price, theatre,
                 pointsToWin);
+        movie.addShowTime(showTime);
         forManagingShows.newShow(showTime);
         return showTime.toShowInfo();
     }
 
     @Override
-    //TODO: probar luego que concurrentement funcione el locking optimista
     public DetailedShowInfo reserve(String userId, String showTimeId,
                                     Set<Integer> selectedSeats) {
         var showTime = forManagingShows.showTimeBy(showTimeId);
@@ -248,7 +234,7 @@ public class Cinema implements CinemaSystem {
         var userRates = forManagingMovies.pagedRatesOrderedByDate(movieId,
                 pageNumber);
         return userRates.stream()
-                .map(rate -> rate.toUserMovieRate()).toList();
+                .map(UserRate::toUserMovieRate).toList();
     }
 
     @Override

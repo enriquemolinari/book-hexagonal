@@ -38,8 +38,8 @@ public class UserRate {
         }
     }
 
-    public boolean isRatedBy(User aUser) {
-        return this.user.equals(aUser);
+    public boolean isRatedBy(String userId) {
+        return this.user.id().equals(userId);
     }
 
     public UserMovieRate toUserMovieRate() {

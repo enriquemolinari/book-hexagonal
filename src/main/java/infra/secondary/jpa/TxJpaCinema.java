@@ -2,7 +2,8 @@ package infra.secondary.jpa;
 
 import hexagon.Cinema;
 import hexagon.primary.port.*;
-import hexagon.secondary.port.ForManagingCreditCardPayments;
+import hexagon.secondary.port.ForGeneratingTokens;
+import hexagon.secondary.port.ForManagingPayments;
 import hexagon.secondary.port.ForSendingEmailNotifications;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -20,28 +21,28 @@ public class TxJpaCinema implements CinemaSystem {
     private static final int NUMBER_OF_RETRIES = 2;
 
     private EntityManagerFactory emf;
-    private ForManagingCreditCardPayments forPayments;
+    private ForManagingPayments forPayments;
     private ForSendingEmailNotifications forSendingEmails;
-    private Token token;
+    private ForGeneratingTokens token;
     private DateTimeProvider timeProvider;
     private int pageSize = 10;
 
     public TxJpaCinema(EntityManagerFactory emf,
-                       ForManagingCreditCardPayments forPayments,
-                       ForSendingEmailNotifications forSendingEmails, Token token,
+                       ForManagingPayments forPayments,
+                       ForSendingEmailNotifications forSendingEmails, ForGeneratingTokens forGeneratingTokens,
                        DateTimeProvider timeProvider) {
         this.emf = emf;
         this.forPayments = forPayments;
         this.forSendingEmails = forSendingEmails;
-        this.token = token;
+        this.token = forGeneratingTokens;
         this.timeProvider = timeProvider;
     }
 
     public TxJpaCinema(EntityManagerFactory emf,
-                       ForManagingCreditCardPayments forPayments,
-                       ForSendingEmailNotifications forSendingEmails, Token token,
+                       ForManagingPayments forPayments,
+                       ForSendingEmailNotifications forSendingEmails, ForGeneratingTokens forGeneratingTokens,
                        DateTimeProvider timeProvider, int pageSize) {
-        this(emf, forPayments, forSendingEmails, token, timeProvider);
+        this(emf, forPayments, forSendingEmails, forGeneratingTokens, timeProvider);
         this.pageSize = pageSize;
     }
 
@@ -251,13 +252,10 @@ public class TxJpaCinema implements CinemaSystem {
     private <T> T inTx(Function<EntityManager, T> toExecute) {
         var em = this.emf.createEntityManager();
         var tx = em.getTransaction();
-
         try {
             tx.begin();
-
             T t = toExecute.apply(em);
             tx.commit();
-
             return t;
         } catch (Exception e) {
             tx.rollback();
