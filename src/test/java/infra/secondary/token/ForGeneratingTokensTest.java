@@ -14,19 +14,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ForGeneratingTokensTest {
 
-    private SecretKey key;
     private String encodedKey;
 
     @BeforeEach
     public void before() {
-        key = Keys.secretKey();
+        SecretKey key = Keys.secretKey();
         encodedKey = Base64.getEncoder()
                 .encodeToString(key.getEncoded());
     }
 
     @Test
     public void validToken() {
-        var token = new PasetoForGeneratingTokens(() -> LocalDateTime.now(), encodedKey,
+        var token = new PasetoForGeneratingTokens(LocalDateTime::now, encodedKey,
                 60 * 1000);
         var stringToken = token.tokenFrom(Map.of("id", "1"));
         assertEquals("1", token.verifyAndGetUserIdFrom(stringToken));

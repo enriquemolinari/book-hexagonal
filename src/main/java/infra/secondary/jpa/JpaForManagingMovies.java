@@ -10,6 +10,7 @@ import jakarta.persistence.TypedQuery;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JpaForManagingMovies implements ForManagingMovies {
@@ -23,9 +24,12 @@ public class JpaForManagingMovies implements ForManagingMovies {
     }
 
     @Override
-    public Movie movieBy(String id) {
+    public Optional<Movie> movieBy(String id) {
         var movieEntity = movieEntityById(id);
-        return movieEntity.toDomain();
+        if (movieEntity != null) {
+            return Optional.of(movieEntity.toDomain());
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -42,7 +46,7 @@ public class JpaForManagingMovies implements ForManagingMovies {
     }
 
     private MovieEntity movieEntityById(String movieId) {
-        return em.getReference(MovieEntity.class, UUID.fromString(movieId));
+        return em.find(MovieEntity.class, UUID.fromString(movieId));
     }
 
     @Override

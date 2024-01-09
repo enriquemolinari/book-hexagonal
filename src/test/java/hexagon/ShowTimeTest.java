@@ -19,7 +19,7 @@ public class ShowTimeTest {
         Exception e = assertThrows(BusinessException.class, () -> {
             new ShowTime(DateTimeProvider.create(),
                     tests.createSmallFishMovie(),
-                    LocalDateTime.of(2023, 03, 10, 15, 0, 0, 0), 10f,
+                    LocalDateTime.of(2023, 3, 10, 15, 0, 0, 0), 10f,
                     new Theater("A Theater", Set.of(1)));
         });
         assertEquals(e.getMessage(), ShowTime.START_TIME_MUST_BE_IN_THE_FUTURE);
@@ -51,9 +51,10 @@ public class ShowTimeTest {
 
     @Test
     public void createShowTime() {
-        //TODO: improve this tests... falta testear mucho de la creacion
         var aShow = tests.createShowForSmallFish();
 
+        assertEquals(10f, aShow.price());
+        assertEquals("Small Fish", aShow.movieName());
         assertTrue(aShow.hasSeatNumbered(1));
         assertTrue(aShow.hasSeatNumbered(2));
         assertFalse(aShow.hasSeatNumbered(8));

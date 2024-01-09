@@ -8,8 +8,9 @@ import hexagon.secondary.port.ForSendingEmailNotifications;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ForTests {
 
@@ -27,38 +28,6 @@ public class ForTests {
 
     PaymenentProviderFake fakePaymenentProvider() {
         return new PaymenentProviderFake();
-    }
-
-    String createEmailBody(String userName, String movieName,
-                           Set<Integer> seats, String showTime, float amount) {
-        var orderedListofSeats = new ArrayList<>(seats);
-        Collections.sort(orderedListofSeats);
-
-        var body = new StringBuilder();
-        body.append("Hello ").append(userName).append("!");
-        body.append(System.lineSeparator());
-        body.append("You have new tickets!");
-        body.append(System.lineSeparator());
-        body.append("Here are the details of your booking: ");
-        body.append(System.lineSeparator());
-        body.append("Movie: ").append(movieName);
-        body.append(System.lineSeparator());
-        body.append("Seats: ").append(orderedListofSeats.stream()
-                .map(s -> s.toString()).collect(Collectors.joining(",")));
-        body.append(System.lineSeparator());
-        body.append("Showtime: ").append(showTime);
-        body.append(System.lineSeparator());
-        body.append("Total paid: ").append(amount);
-
-        return body.toString();
-    }
-
-    ShowTime createShowTime(ForManagingPayments gProvider,
-                            ForSendingEmailNotifications eProvider, int pointsToWin) {
-        return new ShowTime(this.createSmallFishMovie(),
-                LocalDateTime.now().plusDays(2), 10f, new Theater("a Theater",
-                Set.of(1, 2, 3, 4, 5, 6)),
-                pointsToWin);
     }
 
     Movie createSmallFishMovie() {
@@ -100,17 +69,6 @@ public class ForTests {
         };
     }
 
-    Movie createSmallFishMovieWithRates() {
-        return new Movie("Small Fish", "plot ...", 102,
-                LocalDate.of(2023, 10, 10) /* release data */,
-                Set.of(Genre.COMEDY, Genre.ACTION)/* genre */,
-                List.of(new Actor(
-                        new Person("aName", "aSurname", "anEmail@mail.com"),
-                        "George Bix")),
-                List.of(new Person("aDirectorName", "aDirectorSurname",
-                        "anotherEmail@mail.com")));
-    }
-
     ShowTime createShowForSmallFish(DateTimeProvider provider) {
         return new ShowTime(provider, createSmallFishMovie(),
                 LocalDateTime.now().plusDays(1), 10f,
@@ -139,7 +97,7 @@ public class ForTests {
 
     MovieInfo createSuperMovie(CinemaSystem cinema) {
         var movieInfo = cinema.addNewMovie(SUPER_MOVIE_NAME, 109,
-                LocalDate.of(2023, 04, 05),
+                LocalDate.of(2023, 4, 5),
                 SUPER_MOVIE_PLOT,
                 Set.of(Genre.ACTION, Genre.ADVENTURE));
 
@@ -157,12 +115,13 @@ public class ForTests {
 
     MovieInfo createOtherSuperMovie(CinemaSystem cinema) {
         var movieInfo = cinema.addNewMovie(OTHER_SUPER_MOVIE_NAME, 80,
-                LocalDate.of(2022, 04, 05),
+                LocalDate.of(2022, 4, 5),
                 "other super movie ...",
                 Set.of(Genre.COMEDY, Genre.FANTASY));
 
         cinema.addActorTo(movieInfo.id(), "Nico", "Cochix",
-                "nico@bla.com", "super Character Name");
+                "nico@bla.com", "super Cha" +
+                        "racter Name");
 
         cinema.addDirectorTo(movieInfo.id(), "aSuper DirectorName",
                 "sur name",

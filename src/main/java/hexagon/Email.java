@@ -4,9 +4,9 @@ import hexagon.primary.port.BusinessException;
 
 class Email {
 
-    private String email;
+    private final String email;
     static final String NOT_VALID_EMAIL = "Email address is not valid";
-    private static final String REGEX = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
+    private static final String REGEX = "^[\\w-_.+]*[\\w-_.]@(\\w+\\.)+\\w+\\w$";
 
     public Email(String email) {
         if (!email.matches(REGEX)) {

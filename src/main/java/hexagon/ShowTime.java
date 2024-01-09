@@ -21,7 +21,7 @@ public class ShowTime {
     private static final int DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE = 10;
     static final String SHOW_START_TIME_MUST_BE_AFTER_MOVIE_RELEASE_DATE = "Show start time must be before movie release date";
 
-    private UUID id;
+    private final UUID id;
     private LocalDateTime startTime;
     private DateTimeProvider timeProvider = DateTimeProvider.create();
     private Movie movieToBeScreened;
@@ -164,11 +164,11 @@ public class ShowTime {
     }
 
     private void reserveAllSeatsFor(User user, Set<ShowSeat> selection, LocalDateTime reservedUntil) {
-        selection.stream().forEach(seat -> seat.doReserveForUser(user, reservedUntil));
+        selection.forEach(seat -> seat.doReserveForUser(user, reservedUntil));
     }
 
     private void confirmAllSeatsFor(User user, Set<ShowSeat> selection) {
-        selection.stream().forEach(seat -> seat.doConfirmForUser(user));
+        selection.forEach(seat -> seat.doConfirmForUser(user));
     }
 
     private void checkAllSelectedSeatsAreAvailable(Set<ShowSeat> selection) {

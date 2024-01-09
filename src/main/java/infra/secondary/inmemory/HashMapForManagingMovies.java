@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class HashMapForManagingMovies implements ForManagingMovies {
-    private Map<String, Movie> moviesById;
+    private final Map<String, Movie> moviesById;
     private final int pageSize;
 
     public HashMapForManagingMovies(int pageSize) {
@@ -17,8 +17,8 @@ public class HashMapForManagingMovies implements ForManagingMovies {
     }
 
     @Override
-    public Movie movieBy(String id) {
-        return this.moviesById.get(id);
+    public Optional<Movie> movieBy(String id) {
+        return Optional.ofNullable(this.moviesById.get(id));
     }
 
     @Override

@@ -20,11 +20,11 @@ public class TxJpaCinema implements CinemaSystem {
 
     private static final int NUMBER_OF_RETRIES = 2;
 
-    private EntityManagerFactory emf;
-    private ForManagingPayments forPayments;
-    private ForSendingEmailNotifications forSendingEmails;
-    private ForGeneratingTokens token;
-    private DateTimeProvider timeProvider;
+    private final EntityManagerFactory emf;
+    private final ForManagingPayments forPayments;
+    private final ForSendingEmailNotifications forSendingEmails;
+    private final ForGeneratingTokens token;
+    private final DateTimeProvider timeProvider;
     private int pageSize = 10;
 
     public TxJpaCinema(EntityManagerFactory emf,
@@ -182,7 +182,7 @@ public class TxJpaCinema implements CinemaSystem {
         return inTxWithRetriesOnConflict(em -> {
             var cinema = createCinema(em);
             return cinema.rateMovieBy(userId, idMovie, rateValue, comment);
-        }, NUMBER_OF_RETRIES);
+        });
     }
 
     @Override
@@ -214,9 +214,7 @@ public class TxJpaCinema implements CinemaSystem {
 
     @Override
     public String userIdFrom(String token) {
-        return inTx(em -> {
-            return createCinema(em).userIdFrom(token);
-        });
+        return inTx(em -> createCinema(em).userIdFrom(token));
     }
 
     @Override
@@ -246,7 +244,7 @@ public class TxJpaCinema implements CinemaSystem {
             var cinema = createCinema(em);
             return cinema.registerUser(name, surname, email, userName, password,
                     repeatPassword);
-        }, NUMBER_OF_RETRIES);
+        });
     }
 
     private <T> T inTx(Function<EntityManager, T> toExecute) {
@@ -266,11 +264,9 @@ public class TxJpaCinema implements CinemaSystem {
     }
 
     private <T> T inTxWithRetriesOnConflict(
-            Function<EntityManager, T> toExecute,
-            int retriesNumber) {
+            Function<EntityManager, T> toExecute) {
         int retries = 0;
-
-        while (retries < retriesNumber) {
+        while (retries < NUMBER_OF_RETRIES) {
             try {
                 return inTx(toExecute);
                 // There is no a great way in JPA to detect a constraint

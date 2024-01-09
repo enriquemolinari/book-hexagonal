@@ -1,22 +1,21 @@
 package hexagon.secondary.port;
 
+import hexagon.User;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import hexagon.User;
-
 public interface ForManagingUsers {
 
-	void auditSuccessLogin(String userId, LocalDateTime loginDate);
+    void auditSuccessLogin(String userId, LocalDateTime loginDate);
 
-	Optional<User> userBy(String username, String password);
+    Optional<User> userBy(String username, String password);
 
-	void register(User user, String password);
+    void register(User user, String password);
 
-	boolean existsUserBy(String userName);
+    boolean existsUserBy(String userName);
 
-	// use Optional
-	User userById(String id);
+    Optional<User> userById(String id);
 
-	void changePassword(String userId, String newPassword);
+    void changePassword(String userId, String newPassword);
 }

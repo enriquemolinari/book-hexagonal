@@ -6,7 +6,6 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -70,18 +69,6 @@ public class UserEntity {
 
     public void addPurchase(SaleEntity sale) {
         this.purchases.add(sale);
-    }
-
-    String email() {
-        return this.email;
-    }
-
-    public Map<String, Object> toMap() {
-        return Map.of("id", this.id);
-    }
-
-    String id() {
-        return id.toString();
     }
 
     public User toDomain() {

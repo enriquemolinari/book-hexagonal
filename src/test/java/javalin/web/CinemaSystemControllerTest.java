@@ -9,7 +9,6 @@ import jakarta.persistence.Persistence;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import spring.main.SetUpDb;
 
@@ -19,7 +18,6 @@ import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-@Disabled
 // just to demonstrate testing on Javalin web app
 public class CinemaSystemControllerTest {
     private static final String INFO_KEY = "info";
@@ -44,7 +42,7 @@ public class CinemaSystemControllerTest {
     private static final String ERROR_MESSAGE_KEY = "message";
     private static final String TOKEN_COOKIE_NAME = "token";
     private static final String JSON_CONTENT_TYPE = "application/json";
-    private static String URL = "http://localhost:8080";
+    private static final String URL = "http://localhost:8080";
 
     @BeforeAll
     public static void before() {
@@ -67,7 +65,7 @@ public class CinemaSystemControllerTest {
     }
 
     @Test
-    public void loginOk() throws JSONException {
+    public void loginOk() {
         var response = loginAsJosePost();
 
         response.then().body(FULLNAME_KEY, is(JOSE_FULLNAME))
@@ -124,13 +122,11 @@ public class CinemaSystemControllerTest {
 
     private String loginAsJoseAndGetCookie() {
         var loginResponse = loginAsJosePost();
-        var token = getCookie(loginResponse);
-        return token;
+        return getCookie(loginResponse);
     }
 
     private String getCookie(Response loginResponse) {
-        var token = loginResponse.getCookie(TOKEN_COOKIE_NAME);
-        return token;
+        return loginResponse.getCookie(TOKEN_COOKIE_NAME);
     }
 
     private Response loginAsJosePost() {
@@ -146,9 +142,8 @@ public class CinemaSystemControllerTest {
             throw new RuntimeException(e);
         }
 
-        var response = given().contentType(JSON_CONTENT_TYPE)
+        return given().contentType(JSON_CONTENT_TYPE)
                 .body(loginRequestBody.toString())
                 .post(URL + "/login");
-        return response;
     }
 }

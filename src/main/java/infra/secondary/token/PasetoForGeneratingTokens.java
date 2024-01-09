@@ -15,11 +15,11 @@ import java.util.Map;
 public class PasetoForGeneratingTokens implements ForGeneratingTokens {
 
     static final String INVALID_TOKEN = "Invalid token. You have to login.";
-    private byte[] base64Secret;
+    private final byte[] base64Secret;
     private static final long defaultMilliSecondsSinceNow = 60 * 60 * 1000; // 1
     // hs
-    private DateTimeProvider dateProvider;
-    private Long milliSecondsSinceNow;
+    private final DateTimeProvider dateProvider;
+    private final Long milliSecondsSinceNow;
 
     public PasetoForGeneratingTokens(String base64Secret) {
         this(DateTimeProvider.create(), base64Secret,
@@ -41,10 +41,7 @@ public class PasetoForGeneratingTokens implements ForGeneratingTokens {
     @Override
     public String tokenFrom(Map<String, Object> payload) {
         var pb = Pasetos.V2.LOCAL.builder();
-
-        payload.forEach((key, value) -> {
-            pb.claim(key, value);
-        });
+        payload.forEach((key, value) -> pb.claim(key, value));
         pb.setExpiration(Instant.ofEpochSecond(this.expiration()));
         return pb.setSharedSecret(Keys.secretKey(this.base64Secret)).compact();
     }

@@ -10,7 +10,7 @@ public class Person {
     private UUID id;
     private String name;
     private String surname;
-    private Email email;
+    private final Email email;
 
     public Person(String id, String name, String surname, String email) {
         this.id = UUID.fromString(id);

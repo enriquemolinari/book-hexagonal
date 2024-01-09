@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//TODO: ver donde poner aquellas clases que usan los adaptadores
 public class Movie {
 
     static final String MOVIE_PLOT_INVALID = "Movie plot must not be null or blank";
@@ -100,7 +99,7 @@ public class Movie {
     }
 
     public boolean hasGenresOf(List<Genre> genddres) {
-        return this.genres.stream().allMatch(g -> genddres.contains(g));
+        return genddres.containsAll(this.genres);
     }
 
     public boolean hasARole(String anActorName) {

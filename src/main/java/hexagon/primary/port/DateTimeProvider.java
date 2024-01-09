@@ -5,9 +5,9 @@ import java.time.LocalDateTime;
 @FunctionalInterface
 public interface DateTimeProvider {
 
-	LocalDateTime now();
+    LocalDateTime now();
 
-	static DateTimeProvider create() {
-		return () -> LocalDateTime.now();
-	}
+    static DateTimeProvider create() {
+        return LocalDateTime::now;
+    }
 }

@@ -68,7 +68,7 @@ public class MovieEntity {
                 LocalDate releaseDate,
                 Set<String> genres) {
         this(id, name, plot, duration, releaseDate, genres,
-                new ArrayList<ActorEntity>(), new ArrayList<DirectorEntity>());
+                new ArrayList<>(), new ArrayList<>());
     }
 
     public MovieEntity(String id, String name, String plot, int duration,
@@ -102,7 +102,7 @@ public class MovieEntity {
     }
 
     List<Actor> toActors() {
-        return this.actors.stream().map(a -> a.toDomain())
+        return this.actors.stream().map(ActorEntity::toDomain)
                 .collect(Collectors.toList());
     }
 

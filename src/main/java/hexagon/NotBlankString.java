@@ -4,16 +4,16 @@ import hexagon.primary.port.BusinessException;
 
 class NotBlankString {
 
-	private String value;
+    private final String value;
 
-	public NotBlankString(String value, String errorMsg) {
-		if (value == null || value.isBlank()) {
-			throw new BusinessException(errorMsg);
-		}
-		this.value = value;
-	}
+    public NotBlankString(String value, String errorMsg) {
+        if (value == null || value.isBlank()) {
+            throw new BusinessException(errorMsg);
+        }
+        this.value = value;
+    }
 
-	public String value() {
-		return value;
-	}
+    public String value() {
+        return value;
+    }
 }

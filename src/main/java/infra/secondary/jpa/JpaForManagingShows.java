@@ -8,6 +8,7 @@ import hexagon.secondary.port.ForManagingShows;
 import infra.secondary.jpa.entities.*;
 import jakarta.persistence.EntityManager;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,10 +25,13 @@ public class JpaForManagingShows implements ForManagingShows {
     }
 
     @Override
-    public Theater theaterBy(String theaterId) {
+    public Optional<Theater> theaterBy(String theaterId) {
         var theaterEntity = em.find(TheaterEntity.class,
                 UUID.fromString(theaterId));
-        return theaterEntity.toDomain();
+        if (theaterEntity != null) {
+            return Optional.of(theaterEntity.toDomain());
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -36,9 +40,12 @@ public class JpaForManagingShows implements ForManagingShows {
     }
 
     @Override
-    public ShowTime showTimeBy(String showTimeId) {
-        var showTimeEntity = em.getReference(ShowTimeEntity.class, UUID.fromString(showTimeId));
-        return showTimeEntity.toDomain(showTimeEntity.movieToBeScreenedToDomain());
+    public Optional<ShowTime> showTimeBy(String showTimeId) {
+        var showTimeEntity = em.find(ShowTimeEntity.class, UUID.fromString(showTimeId));
+        if (showTimeEntity != null) {
+            return Optional.of(showTimeEntity.toDomain(showTimeEntity.movieToBeScreenedToDomain()));
+        }
+        return Optional.empty();
     }
 
     @Override

@@ -11,7 +11,7 @@ public class ShowSeat {
     static final String SEAT_BUSY = "Seat is currently busy";
     static final String SEAT_NOT_RESERVED_OR_ALREADY_CONFIRMED = "The seat cannot be confirmed";
 
-    private UUID id;
+    private final UUID id;
     private User user;
     private boolean reserved;
     private boolean confirmed;

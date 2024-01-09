@@ -5,11 +5,11 @@ import hexagon.UserRate;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-//TODO: Definir paquete donde poner lo compartido entre los puertos y el hexagon
 public interface ForManagingMovies {
 
-    Movie movieBy(String id);
+    Optional<Movie> movieBy(String id);
 
     void newMovie(Movie movie);
 

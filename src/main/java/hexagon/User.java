@@ -18,7 +18,7 @@ public class User {
     static final String POINTS_MUST_BE_GREATER_THAN_ZERO = "Points must be greater than zero";
     static final String PASSWORDS_MUST_BE_EQUALS = "Passwords must be equals";
 
-    private UUID id;
+    private final UUID id;
     @Getter
     private final String userName;
     private final Person person;

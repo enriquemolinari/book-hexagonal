@@ -34,8 +34,13 @@ public class JpaForManagingUsers implements ForManagingUsers {
     }
 
     @Override
-    public User userById(String id) {
-        return em.find(UserEntity.class, UUID.fromString(id)).toDomain();
+    //TODO: can i improve this?
+    public Optional<User> userById(String id) {
+        var user = em.find(UserEntity.class, UUID.fromString(id));
+        if (user != null) {
+            return Optional.of(user.toDomain());
+        }
+        return Optional.empty();
     }
 
     @Override

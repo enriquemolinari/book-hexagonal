@@ -35,6 +35,7 @@ public class CinemaTest {
     private static final String JOSEUSER_CREDIT_CARD_NUMBER = "123-456-789";
     private static final String JOSEUSER_USERNAME = "joseuser";
     private static final String ANTONIOUSER_USERNAME = "antonio";
+    private static final String NON_EXISTENT_ID = "3c608ba1-1aa5-4f85-9dc6-e0fe4fa4cc0a";
     private final ForTests tests = new ForTests();
 
     private static EntityManagerFactory emf;
@@ -202,6 +203,47 @@ public class CinemaTest {
             fail("A user has logged in with a wrong password");
         });
         assertEquals(Cinema.USER_OR_PASSWORD_ERROR, e.getMessage());
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "createCinema")
+    public void movieIdNotExists(CinemaSystem cinema) {
+        var e = assertThrows(BusinessException.class, () -> {
+            cinema.movie(NON_EXISTENT_ID);
+            fail("MovieId should not exists in the database");
+        });
+        assertEquals(Cinema.MOVIE_ID_DOES_NOT_EXISTS, e.getMessage());
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "createCinema")
+    public void showTimeIdNotExists(CinemaSystem cinema) {
+        var e = assertThrows(BusinessException.class, () -> {
+            cinema.show(NON_EXISTENT_ID);
+            fail("ShowId should not exists in the database");
+        });
+        assertEquals(Cinema.SHOW_TIME_ID_NOT_EXISTS, e.getMessage());
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "createCinema")
+    public void theaterIdNotExists(CinemaSystem cinema) {
+        var movieInfo = tests.createSuperMovie(cinema);
+        var e = assertThrows(BusinessException.class, () -> {
+            cinema.addNewShowFor(movieInfo.id(), LocalDateTime.now(), 10f, NON_EXISTENT_ID, 10);
+            fail("ShowId should not exists in the database");
+        });
+        assertEquals(Cinema.THEATER_ID_DOES_NOT_EXISTS, e.getMessage());
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "createCinema")
+    public void userIdNotExists(CinemaSystem cinema) {
+        var e = assertThrows(BusinessException.class, () -> {
+            cinema.profileFrom(NON_EXISTENT_ID);
+            fail("UserId should not exists in the database");
+        });
+        assertEquals(Cinema.USER_ID_NOT_EXISTS, e.getMessage());
     }
 
     @ParameterizedTest
@@ -448,7 +490,7 @@ public class CinemaTest {
             cinema.changePassword(userId, JOSEUSER_PASS, "123412341234",
                     "123412341294");
         });
-        assertTrue(e.getMessage().equals(User.PASSWORDS_MUST_BE_EQUALS));
+        assertEquals(User.PASSWORDS_MUST_BE_EQUALS, e.getMessage());
     }
 
     @ParameterizedTest
@@ -464,27 +506,24 @@ public class CinemaTest {
     }
 
     private String registerUserJose(CinemaSystem cinema) {
-        var joseId = cinema.registerUser(JOSEUSER_NAME, JOSEUSER_SURNAME,
+        return cinema.registerUser(JOSEUSER_NAME, JOSEUSER_SURNAME,
                 JOSEUSER_EMAIL,
                 JOSEUSER_USERNAME,
                 JOSEUSER_PASS, JOSEUSER_PASS);
-        return joseId;
     }
 
     private String registerUserAntonio(CinemaSystem cinema) {
-        var userId = cinema.registerUser("Antonio", "Antonio Surname",
+        return cinema.registerUser("Antonio", "Antonio Surname",
                 "antonio@bla.com",
                 ANTONIOUSER_USERNAME,
                 "password12345678", "password12345678");
-        return userId;
     }
 
     private String registerAUser(CinemaSystem cinema) {
-        var userId = cinema.registerUser("aUser", "user surname",
+        return cinema.registerUser("aUser", "user surname",
                 "enrique@bla.com",
                 "username",
                 "password12345678", "password12345678");
-        return userId;
     }
 
     private String createATheater(CinemaSystem cinema) {

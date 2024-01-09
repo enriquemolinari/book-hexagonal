@@ -8,11 +8,12 @@ import hexagon.secondary.port.ForManagingShows;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class HashMapForManangingShows implements ForManagingShows {
-    private Map<String, Theater> theaters;
-    private Map<String, ShowTime> shows;
+    private final Map<String, Theater> theaters;
+    private final Map<String, ShowTime> shows;
 
     public HashMapForManangingShows() {
         this.theaters = new HashMap<>();
@@ -25,8 +26,8 @@ public class HashMapForManangingShows implements ForManagingShows {
     }
 
     @Override
-    public Theater theaterBy(String theaterId) {
-        return this.theaters.get(theaterId);
+    public Optional<Theater> theaterBy(String theaterId) {
+        return Optional.ofNullable(this.theaters.get(theaterId));
     }
 
     @Override
@@ -35,8 +36,8 @@ public class HashMapForManangingShows implements ForManagingShows {
     }
 
     @Override
-    public ShowTime showTimeBy(String showTimeId) {
-        return this.shows.get(showTimeId);
+    public Optional<ShowTime> showTimeBy(String showTimeId) {
+        return Optional.ofNullable(this.shows.get(showTimeId));
     }
 
     @Override

@@ -43,8 +43,8 @@ public class HashMapForManagingUsers implements ForManagingUsers {
     }
 
     @Override
-    public User userById(String id) {
-        return usersById.get(id);
+    public Optional<User> userById(String id) {
+        return Optional.ofNullable(usersById.get(id));
     }
 
     @Override

@@ -17,7 +17,7 @@ public class CinemaSystemController {
 
     public static final String AUTHENTICATION_REQUIRED = "You must be logged in to perform this action...";
     private static final String TOKEN_COOKIE_NAME = "token";
-    private CinemaSystem cinema;
+    private final CinemaSystem cinema;
 
     public CinemaSystemController(CinemaSystem cinema) {
         this.cinema = cinema;
@@ -79,11 +79,7 @@ public class CinemaSystemController {
     @GetMapping("/users/profile")
     public ResponseEntity<UserProfile> userProfile(
             @CookieValue(required = false) String token) {
-
-        var profile = ifAuthenticatedDo(token, userId -> {
-            return cinema.profileFrom(userId);
-        });
-
+        var profile = ifAuthenticatedDo(token, cinema::profileFrom);
         return ResponseEntity.ok(profile);
     }
 
@@ -97,7 +93,6 @@ public class CinemaSystemController {
                     passBody.newPassword1(), passBody.newPassword2());
             return null;
         });
-
         return ResponseEntity.ok().build();
     }
 
@@ -112,7 +107,6 @@ public class CinemaSystemController {
     public ResponseEntity<UserProfile> login(@RequestBody LoginRequest form) {
         String token = cinema.login(form.username(), form.password());
         var profile = cinema.profileFrom(cinema.userIdFrom(token));
-
         var cookie = ResponseCookie.from(TOKEN_COOKIE_NAME, token)
                 .httpOnly(true).path("/").build();
         var headers = new HttpHeaders();
@@ -136,12 +130,10 @@ public class CinemaSystemController {
     public ResponseEntity<DetailedShowInfo> makeReservation(
             @CookieValue(required = false) String token,
             @PathVariable String showId, @RequestBody Set<Integer> seats) {
-
         var showInfo = ifAuthenticatedDo(token, userId -> {
             return this.cinema.reserve(userId, showId,
                     seats);
         });
-
         return ResponseEntity.ok(showInfo);
     }
 
@@ -149,14 +141,12 @@ public class CinemaSystemController {
     public ResponseEntity<Ticket> payment(
             @CookieValue(required = false) String token,
             @PathVariable String showId, @RequestBody PaymentRequest payment) {
-
         var ticket = ifAuthenticatedDo(token, userId -> {
             return this.cinema.pay(userId, showId,
                     payment.selectedSeats(), payment.creditCardNumber(),
                     payment.toYearMonth(),
                     payment.secturityCode());
         });
-
         return ResponseEntity.ok(ticket);
     }
 
@@ -164,21 +154,17 @@ public class CinemaSystemController {
     public ResponseEntity<UserMovieRate> rateMovie(
             @CookieValue(required = false) String token,
             @PathVariable String movieId, @RequestBody RateRequest rateRequest) {
-
         var userMovieRated = ifAuthenticatedDo(token, userId -> {
             return this.cinema.rateMovieBy(userId, movieId,
                     rateRequest.rateValue(), rateRequest.comment());
         });
-
         return ResponseEntity.ok(userMovieRated);
     }
 
     private <S> S ifAuthenticatedDo(String token, Function<String, S> method) {
-        var userId = Optional.ofNullable(token).map(tk -> {
-            return this.cinema.userIdFrom(tk);
-        }).orElseThrow(() -> new AuthException(
-                AUTHENTICATION_REQUIRED));
-
+        var userId = Optional.ofNullable(token).map(this.cinema::userIdFrom)
+                .orElseThrow(() -> new AuthException(
+                        AUTHENTICATION_REQUIRED));
         return method.apply(userId);
     }
 }

@@ -64,10 +64,10 @@ public class CinemaSystemControllerTest {
     private static final String ERROR_MESSAGE_KEY = "message";
     private static final String TOKEN_COOKIE_NAME = "token";
     private static final String JSON_CONTENT_TYPE = "application/json";
-    private static String URL = "http://localhost:8080";
+    private static final String URL = "http://localhost:8080";
 
     @Test
-    public void loginOk() throws JSONException {
+    public void loginOk() {
         var response = loginAsJosePost();
 
         response.then().body(FULLNAME_KEY, is(JOSE_FULLNAME))
@@ -78,7 +78,7 @@ public class CinemaSystemControllerTest {
     }
 
     @Test
-    public void logoutOk() throws JSONException {
+    public void logoutOk() {
         var token = loginAsJoseAndGetCookie();
 
         var response = given().contentType(JSON_CONTENT_TYPE)
@@ -111,10 +111,9 @@ public class CinemaSystemControllerTest {
             throw new RuntimeException(e);
         }
 
-        var response = given().contentType(JSON_CONTENT_TYPE)
+        return given().contentType(JSON_CONTENT_TYPE)
                 .body(loginRequestBody.toString())
                 .post(URL + "/login");
-        return response;
     }
 
     @Test
@@ -374,7 +373,7 @@ public class CinemaSystemControllerTest {
     }
 
     @Test
-    public void reserveAShowFailIfNotAuthenticated() throws JSONException {
+    public void reserveAShowFailIfNotAuthenticated() {
         JSONArray seatsRequest = jsonBodyForReserveSeats(5, 7, 9);
 
         var response = given().contentType(JSON_CONTENT_TYPE)
@@ -491,19 +490,17 @@ public class CinemaSystemControllerTest {
     }
 
     private Response payPost(String token, JSONObject paymentRequest) {
-        var response = given().contentType(JSON_CONTENT_TYPE)
+        return given().contentType(JSON_CONTENT_TYPE)
                 .cookie(TOKEN_COOKIE_NAME, token)
                 .body(paymentRequest.toString())
                 .post(URL + "/shows/" + SetUpDb.SHOW_SMAL_FISH_ONE_ID + "/pay");
-        return response;
     }
 
     private Response reservePost(String token, JSONArray seatsRequest) {
-        var response = given().contentType(JSON_CONTENT_TYPE)
+        return given().contentType(JSON_CONTENT_TYPE)
                 .cookie(TOKEN_COOKIE_NAME, token)
                 .body(seatsRequest.toString())
                 .post(URL + "/shows/" + SetUpDb.SHOW_SMAL_FISH_ONE_ID + "/reserve");
-        return response;
     }
 
     private JSONArray jsonBodyForReserveSeats(Integer... seats) {

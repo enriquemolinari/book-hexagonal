@@ -18,18 +18,17 @@ public class UserRate {
 
     public UserRate(String id, User user, int value, String comment,
                     Movie movie) {
-        this(user, value, comment, movie);
-        this.id = UUID.fromString(id);
-    }
-
-    public UserRate(User user, int value, String comment, Movie movie) {
         checkValidRateValue(value);
-        this.id = UUID.randomUUID();
+        this.id = UUID.fromString(id);
         this.user = user;
         this.value = value;
         this.comment = comment;
         this.movie = movie;
         this.ratedAt = LocalDateTime.now();
+    }
+
+    public UserRate(User user, int value, String comment, Movie movie) {
+        this(UUID.randomUUID().toString(), user, value, comment, movie);
     }
 
     private void checkValidRateValue(int value) {

@@ -30,7 +30,6 @@ public class SetUpDb {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-
             var craigDirector = new DirectorEntity(UUID.randomUUID().toString(), "Christopher", "Wegemen",
                     "craig@mymovies.com");
             var judithDirector = new DirectorEntity(UUID.randomUUID().toString(), "Jude", "Zevele",
@@ -175,7 +174,7 @@ public class SetUpDb {
             tx.rollback();
             throw new RuntimeException(e);
         } finally {
-            if (em != null && em.isOpen()) {
+            if (em.isOpen()) {
                 em.close();
             }
         }
