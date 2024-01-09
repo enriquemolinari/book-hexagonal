@@ -12,7 +12,7 @@ class MovieDurationFormat {
 
     @Override
     public String toString() {
-        var duration = Duration.ofMinutes(Long.valueOf(this.duration));
+        var duration = Duration.ofMinutes(this.duration);
         var description = "%dhr";
 
         if (duration.toHours() > 1) {

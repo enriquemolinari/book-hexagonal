@@ -33,10 +33,7 @@ public class CinemaSystemControllerTest {
     private static final String USERNAME_KEY = "username";
     private static final String JSON_ROOT = "$";
     private static final String SHOW_MOVIE_NAME_KEY = "movieName";
-    private static final String ROCK_IN_THE_SCHOOL_MOVIE_NAME = "Rock in the School";
-    private static final String RUNNING_FAR_AWAY_MOVIE_NAME = "Running far Away";
     private static final String SMALL_FISH_MOVIE_NAME = "Small Fish";
-    private static final String CRASH_TEA_MOVIE_NAME = "Crash Tea";
     private static final String PASSWORD_JOSE = "123456789012";
     private static final String USERNAME_JOSE = "jsimini";
     private static final String ERROR_MESSAGE_KEY = "message";
@@ -47,12 +44,9 @@ public class CinemaSystemControllerTest {
     @BeforeAll
     public static void before() {
         String SECRET = "Kdj5zuBIBBgcWpv9zjKOINl2yUKUXVKO+SkOVE3VuZ4=";
-
         var emf = Persistence
                 .createEntityManagerFactory("test-derby-cinema");
-
         new SetUpDb(emf).createSchemaAndPopulateSampleData();
-
         var cinema = new TxJpaCinema(emf,
                 (String creditCardNumber, YearMonth expire, String securityCode,
                  float totalAmount) -> {
@@ -67,7 +61,6 @@ public class CinemaSystemControllerTest {
     @Test
     public void loginOk() {
         var response = loginAsJosePost();
-
         response.then().body(FULLNAME_KEY, is(JOSE_FULLNAME))
                 .body(USERNAME_KEY, is(USERNAME_JOSE))
                 .body(EMAIL_KEY, is(JOSE_EMAIL))
@@ -80,7 +73,6 @@ public class CinemaSystemControllerTest {
         JSONObject rateRequestBody = new JSONObject();
         rateRequestBody.put(RATE_VALUE_KEY, 4);
         rateRequestBody.put(COMMENT_KEY, "a comment...");
-
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .body(rateRequestBody.toString())
                 .post(URL + "/movies/1/rate");
@@ -92,11 +84,8 @@ public class CinemaSystemControllerTest {
     @Test
     public void showOneOk() {
         var response = get(URL + "/shows/" + SetUpDb.SHOW_SMAL_FISH_ONE_ID);
-        // To avoid fragile tests, I use oneOf, as the movie assigned to show 1
-        // might change
         response.then().body("info." + SHOW_MOVIE_NAME_KEY,
-                is(oneOf(SMALL_FISH_MOVIE_NAME, ROCK_IN_THE_SCHOOL_MOVIE_NAME,
-                        RUNNING_FAR_AWAY_MOVIE_NAME, CRASH_TEA_MOVIE_NAME)));
+                is(SMALL_FISH_MOVIE_NAME));
         response.then().body("info.showId", is(SetUpDb.SHOW_SMAL_FISH_ONE_ID));
         response.then().body(JSON_ROOT, hasKey(CURRENT_SEATS_KEY));
         response.then().body(INFO_KEY, hasKey("movieDuration"));
@@ -105,16 +94,13 @@ public class CinemaSystemControllerTest {
     @Test
     public void rateMovieOk() throws JSONException {
         var token = loginAsJoseAndGetCookie();
-
         JSONObject rateRequestBody = new JSONObject();
         rateRequestBody.put(RATE_VALUE_KEY, 4);
         rateRequestBody.put(COMMENT_KEY, "a comment...");
-
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .cookie(TOKEN_COOKIE_NAME, token)
                 .body(rateRequestBody.toString())
                 .post(URL + "/movies/" + SetUpDb.SMALL_FISH_MOVIE_ID + "/rate");
-
         response.then().body(USERNAME_KEY, is(USERNAME_JOSE))
                 .body(RATE_VALUE_KEY, is(4))
                 .body(COMMENT_KEY, is("a comment..."));

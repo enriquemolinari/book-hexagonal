@@ -3,7 +3,6 @@ package hexagon.primary.port;
 import lombok.AccessLevel;
 import lombok.Getter;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +29,7 @@ public class Ticket {
     }
 
     public boolean hasSeats(Set<Integer> seats) {
-        return new HashSet<>(this.payedSeats).containsAll(seats);
+        return this.payedSeats.containsAll(seats);
     }
 
     public boolean isPurchaserUserName(String aUserName) {

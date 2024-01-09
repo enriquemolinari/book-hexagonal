@@ -447,14 +447,9 @@ public class CinemaTest {
         assertEquals(OTHER_SUPER_MOVIE_NAME, movies.get(0).name());
     }
 
-    @Test
-    public void reservationHasExpired() {
-        var cinema = new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
-                tests.doNothingEmailProvider(),
-                tests.doNothingToken(),
-                // already in the past
-                () -> LocalDateTime.now().minusMonths(1),
-                10);
+    @ParameterizedTest
+    @MethodSource("createCinemaWithDateTimeProvider")
+    public void reservationHasExpired(CinemaSystem cinema) {
         var movieInfo = tests.createSuperMovie(cinema);
         String theaterId = createATheater(cinema);
         var showInfo = cinema.addNewShowFor(movieInfo.id(),

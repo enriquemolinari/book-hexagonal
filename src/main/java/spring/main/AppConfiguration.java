@@ -28,7 +28,7 @@ public class AppConfiguration {
         addSampleData();
         return new TxJpaCinema(entityManagerFactory, new PleasePayProviderForManagingPayment(),
                 new TheBestProviderForSendingEmailNotifications(),
-                new PasetoForGeneratingTokens(SECRET), DateTimeProvider.create(), 10 /*
+                new PasetoForGeneratingTokens(SECRET), DateTimeProvider.create(), 2 /*
          * page size
          */);
     }
