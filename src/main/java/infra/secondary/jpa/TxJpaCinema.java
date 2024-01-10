@@ -81,9 +81,9 @@ public class TxJpaCinema implements CinemaSystem {
     @Override
     public MovieInfo movie(String id) {
         return inTx(em -> {
-            // or have Cinema already instantiated and use a setter for
-            // or instantiate every time. For me is better this...
-            // always create ready to use instances, better for understanding
+            // Or have Cinema already instantiated and use a setter assigning the entityManager
+            // or instantiate Cinema every time and use a propper constructor. For me is better this.
+            // Always create ready to use instances, better for understanding the use of the class.
             var cinema = createCinema(em);
             return cinema.movie(id);
         });

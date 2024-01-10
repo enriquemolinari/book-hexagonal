@@ -11,7 +11,6 @@ public class UserTest {
     @Test
     public void userCanBeCreated() {
         var u = createUserEnrique();
-
         assertTrue(u.hasPassword("Ab138RtoUjkL"));
         assertTrue(u.hasName("Enrique"));
         assertTrue(u.hasSurname("Molinari"));
@@ -32,7 +31,6 @@ public class UserTest {
                             "enrique.molinari@gmail.com"),
                     null, "Ab138RtoUjkL", "Ab138RtoUjkL");
         });
-
         assertEquals(User.INVALID_USERNAME, e.getMessage());
     }
 
@@ -84,7 +82,6 @@ public class UserTest {
     @Test
     public void changePasswordCurrentPasswordNotTheSame() {
         var u = createUserEnrique();
-
         Exception e = assertThrows(BusinessException.class, () -> {
             u.changePassword("abchd1239876", "Abcdefghijkl", "Abcdefghijkl");
         });
@@ -94,7 +91,6 @@ public class UserTest {
     @Test
     public void changePasswordNewPassword1And2DoesNotMatch() {
         var u = createUserEnrique();
-
         Exception e = assertThrows(BusinessException.class, () -> {
             u.changePassword("Ab138RtoUjkL", "Abcdefghrjkl", "Abcdefghijkl");
         });
@@ -104,7 +100,6 @@ public class UserTest {
     @Test
     public void changePasswordNewPasswordNotValid() {
         var u = createUserEnrique();
-
         Exception e = assertThrows(BusinessException.class, () -> {
             u.changePassword("Ab138RtoUjkL", "Abcdefgh", "Abcdefgh");
         });
@@ -127,7 +122,6 @@ public class UserTest {
     @Test
     public void userProfile() {
         var u = createUserEnrique();
-
         assertEquals(new UserProfile("Enrique Molinari", "enriquemolinari",
                 "enrique.molinari@gmail.com", 0), u.toProfile());
     }
@@ -142,11 +136,9 @@ public class UserTest {
     @Test
     public void userEarnsAnInvalidNumberOfPoints() {
         var u = createUserEnrique();
-
         Exception e = assertThrows(BusinessException.class, () -> {
             u.newEarnedPoints(0);
         });
         assertEquals(User.POINTS_MUST_BE_GREATER_THAN_ZERO, e.getMessage());
     }
-
 }

@@ -8,11 +8,13 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 public class VerifyArchitectureTest {
 
+    public static final String[] ALL_PACKAGES = {"hexagon..", "infra..", "spring..", "javalin.."};
+
     @Test
     public void hexagonShouldOnlyDependOnHexagon() {
         JavaClasses importedClasses = new ClassFileImporter().withImportOption(
                         new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
-                .importPackages("hexagon..", "infra..", "spring..", "javalin..");
+                .importPackages(ALL_PACKAGES);
         classes().that().resideInAPackage("hexagon").should()
                 .onlyDependOnClassesThat()
                 .resideInAnyPackage("hexagon..", "java..", "javax..",
@@ -20,52 +22,27 @@ public class VerifyArchitectureTest {
                 .check(importedClasses);
     }
 
-    //@Test
-    public void modelMailShouldOnlyDependOnModelApi() {
+    @Test
+    public void infraPrimaryAdapterShouldOnlyDependOnPrimaryPort() {
         JavaClasses importedClasses = new ClassFileImporter().withImportOption(
                         new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
-                .importPackages("model..", "spring..", "main");
-        classes().that().resideInAPackage("model.mail").should()
+                .importPackages(ALL_PACKAGES);
+        classes().that().resideInAPackage("infra.primary..").should()
                 .onlyDependOnClassesThat()
-                .resideInAnyPackage("model.api", "model.mail", "java..",
-                        "javax..")
+                .resideInAnyPackage("infra.primary..", "hexagon.primary.port", "java..",
+                        "javax..", "org.springframework..", "io.javalin..", "jakarta.servlet..")
                 .check(importedClasses);
     }
 
-    //@Test
-    public void modelTokenShouldOnlyDependOnModelApi() {
+    @Test
+    public void infraSecondaryAdapterShouldOnlyDependOnHexagon() {
         JavaClasses importedClasses = new ClassFileImporter().withImportOption(
                         new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
-                .importPackages("model..", "spring..", "main");
-        classes().that().resideInAPackage("model.token").should()
+                .importPackages(ALL_PACKAGES);
+        classes().that().resideInAPackage("infra.secondary..").should()
                 .onlyDependOnClassesThat()
-                .resideInAnyPackage("model.api", "model.token", "java..",
-                        "javax..", "dev.paseto..")
-                .check(importedClasses);
-    }
-
-    //@Test
-    public void modelPaymentShouldOnlyDependOnModelApi() {
-        JavaClasses importedClasses = new ClassFileImporter().withImportOption(
-                        new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
-                .importPackages("model..", "spring..", "main");
-        classes().that().resideInAPackage("model.payment").should()
-                .onlyDependOnClassesThat()
-                .resideInAnyPackage("model.api", "model.payment", "java..",
-                        "javax..")
-                .check(importedClasses);
-    }
-
-    //@Test
-    public void webPackagesOutSideModelShouldOnlyDependOnModelApi() {
-        JavaClasses importedClasses = new ClassFileImporter().withImportOption(
-                        new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
-                .importPackages("model..", "spring..", "main");
-        classes().that().resideInAPackage("spring.web").should()
-                .onlyDependOnClassesThat()
-                .resideInAnyPackage("model.api", "spring.web", "java..",
-                        "javax..",
-                        "org.springframework..")
+                .resideInAnyPackage("infra.secondary..", "hexagon..", "hexagon.secondary.port", "java..",
+                        "javax..", "dev.paseto..", "jakarta.persistence..", "lombok..")
                 .check(importedClasses);
     }
 }
