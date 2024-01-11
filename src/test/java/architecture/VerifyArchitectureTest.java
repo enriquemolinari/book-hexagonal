@@ -35,14 +35,74 @@ public class VerifyArchitectureTest {
     }
 
     @Test
-    public void infraSecondaryAdapterShouldOnlyDependOnHexagon() {
+    public void infraSecondaryAdapterJpaShouldOnlyDependOnSecondaryPortAndHexagon() {
         JavaClasses importedClasses = new ClassFileImporter().withImportOption(
                         new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
                 .importPackages(ALL_PACKAGES);
-        classes().that().resideInAPackage("infra.secondary..").should()
+        classes().that().resideInAPackage("infra.secondary.jpa")
+                .should().onlyDependOnClassesThat()
+                .resideInAnyPackage("infra.secondary.jpa..", "hexagon..", "hexagon.secondary.port",
+                        "java..", "javax..", "dev.paseto..", "jakarta.persistence..", "lombok..")
+                .check(importedClasses);
+    }
+
+    @Test
+    public void infraSecondaryAdapterInMemoryShouldOnlyDependOnSecondaryPortAndHexagon() {
+        JavaClasses importedClasses = new ClassFileImporter().withImportOption(
+                        new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
+                .importPackages(ALL_PACKAGES);
+        classes().that().resideInAPackage("infra.secondary.inmemory")
+                .should().onlyDependOnClassesThat()
+                .resideInAnyPackage("infra.secondary.inmemory", "hexagon..", "hexagon.secondary.port",
+                        "java..", "javax..", "dev.paseto..", "jakarta.persistence..", "lombok..")
+                .check(importedClasses);
+    }
+
+    @Test
+    public void infraSecondaryAdapterPaymentShouldOnlyDependOnSecondaryPort() {
+        JavaClasses importedClasses = new ClassFileImporter().withImportOption(
+                        new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
+                .importPackages(ALL_PACKAGES);
+        classes().that().resideInAPackage("infra.secondary.payment").should()
                 .onlyDependOnClassesThat()
-                .resideInAnyPackage("infra.secondary..", "hexagon..", "hexagon.secondary.port", "java..",
-                        "javax..", "dev.paseto..", "jakarta.persistence..", "lombok..")
+                .resideInAnyPackage("infra.secondary.payment", "hexagon.secondary.port", "java..",
+                        "javax..")
+                .check(importedClasses);
+    }
+
+    @Test
+    public void infraSecondaryAdapterInMemoryShouldOnlyDependOnSecondaryPort() {
+        JavaClasses importedClasses = new ClassFileImporter().withImportOption(
+                        new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
+                .importPackages(ALL_PACKAGES);
+        classes().that().resideInAPackage("infra.secondary.inmemory").should()
+                .onlyDependOnClassesThat()
+                .resideInAnyPackage("infra.secondary.inmemory", "hexagon..", "java..",
+                        "javax..")
+                .check(importedClasses);
+    }
+
+    @Test
+    public void infraSecondaryAdapterEmailNotificationShouldOnlyDependOnSecondaryPort() {
+        JavaClasses importedClasses = new ClassFileImporter().withImportOption(
+                        new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
+                .importPackages(ALL_PACKAGES);
+        classes().that().resideInAPackage("infra.secondary.mail").should()
+                .onlyDependOnClassesThat()
+                .resideInAnyPackage("infra.secondary.mail", "hexagon.secondary.port", "java..",
+                        "javax..")
+                .check(importedClasses);
+    }
+
+    @Test
+    public void infraSecondaryAdapterTokenShouldOnlyDependOnSecondaryPort() {
+        JavaClasses importedClasses = new ClassFileImporter().withImportOption(
+                        new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
+                .importPackages(ALL_PACKAGES);
+        classes().that().resideInAPackage("infra.secondary.token").should()
+                .onlyDependOnClassesThat()
+                .resideInAnyPackage("infra.secondary.token", "hexagon.secondary.port", "java..",
+                        "javax..", "dev.paseto..")
                 .check(importedClasses);
     }
 }

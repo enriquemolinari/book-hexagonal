@@ -69,7 +69,6 @@ public class CinemaSystemControllerTest {
     @Test
     public void loginOk() {
         var response = loginAsJosePost();
-
         response.then().body(FULLNAME_KEY, is(JOSE_FULLNAME))
                 .body(USERNAME_KEY, is(USERNAME_JOSE))
                 .body(EMAIL_KEY, is(JOSE_EMAIL))
@@ -80,11 +79,9 @@ public class CinemaSystemControllerTest {
     @Test
     public void logoutOk() {
         var token = loginAsJoseAndGetCookie();
-
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .cookie(TOKEN_COOKIE_NAME, token)
                 .post(URL + "/logout");
-
         var cookie = response.getDetailedCookie(TOKEN_COOKIE_NAME);
         assertEquals(0, cookie.getMaxAge());
         assertEquals("", cookie.getValue());
@@ -121,11 +118,9 @@ public class CinemaSystemControllerTest {
         JSONObject loginRequestBody = new JSONObject();
         loginRequestBody.put(USERNAME_KEY, USERNAME_JOSE);
         loginRequestBody.put(PASSWORD_KEY, "44446789012");
-
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .body(loginRequestBody.toString())
                 .post(URL + "/login");
-
         response.then().body(ERROR_MESSAGE_KEY,
                 is(Cinema.USER_OR_PASSWORD_ERROR));
         assertFalse(response.cookies().containsKey(TOKEN_COOKIE_NAME));
@@ -145,9 +140,7 @@ public class CinemaSystemControllerTest {
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .body(registerRequestBody.toString())
                 .post(URL + "/users/register");
-
         response.then().statusCode(200);
-
         loginAsPost("auniqueusername", "444467890124").then()
                 .cookie(TOKEN_COOKIE_NAME, containsString("v2.local"));
     }
@@ -155,12 +148,10 @@ public class CinemaSystemControllerTest {
     @Test
     public void playingNowShowsOk() {
         var response = get(URL + "/shows");
-
         response.then().body(SHOW_MOVIE_NAME_KEY,
                 hasItems(CRASH_TEA_MOVIE_NAME, SMALL_FISH_MOVIE_NAME,
                         ROCK_IN_THE_SCHOOL_MOVIE_NAME,
                         RUNNING_FAR_AWAY_MOVIE_NAME));
-
         response.then().body(MOVIE_DURATION_KEY,
                 hasItems("1hr 49mins", "2hrs 05mins", "1hr 45mins",
                         "1hr 45mins"));
@@ -169,11 +160,9 @@ public class CinemaSystemControllerTest {
     @Test
     public void moviesOk() {
         var response = get(URL + "/movies");
-
         response.then().body(MOVIE_NAME_KEY,
                 hasItems(CRASH_TEA_MOVIE_NAME,
                         ROCK_IN_THE_SCHOOL_MOVIE_NAME));
-
         assertOnMovies(response);
     }
 
@@ -188,7 +177,6 @@ public class CinemaSystemControllerTest {
     @Test
     public void retrieveUserProfileFailIfNotAuthenticated() {
         var response = get(URL + "/users/profile");
-
         response.then().body(ERROR_MESSAGE_KEY,
                 is(CinemaSystemController.AUTHENTICATION_REQUIRED));
     }
@@ -196,16 +184,13 @@ public class CinemaSystemControllerTest {
     @Test
     public void changePasswordFailPasswordsDoesNotMatch() throws JSONException {
         var token = loginAsLuciaAndGetCookie();
-
         JSONObject changePassRequestBody = changePasswordBody();
         changePassRequestBody.put(CHANGE_PASS_BODY_PASSWORD2,
                 "anotherpassword");
-
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .cookie(TOKEN_COOKIE_NAME, token)
                 .body(changePassRequestBody.toString())
                 .post(URL + "/users/changepassword");
-
         assertEquals(500, response.statusCode());
         response.then().body(ERROR_MESSAGE_KEY,
                 is("Passwords must be equals"));
@@ -214,11 +199,9 @@ public class CinemaSystemControllerTest {
     @Test
     public void changePasswordFailWhenNotAuthenticated() throws JSONException {
         JSONObject changePassRequestBody = changePasswordBody();
-
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .body(changePassRequestBody.toString())
                 .post(URL + "/users/changepassword");
-
         response.then().body(ERROR_MESSAGE_KEY,
                 is(CinemaSystemController.AUTHENTICATION_REQUIRED));
     }
@@ -226,14 +209,11 @@ public class CinemaSystemControllerTest {
     @Test
     public void changePasswordOk() throws JSONException {
         var token = loginAsLuciaAndGetCookie();
-
         JSONObject changePassRequestBody = changePasswordBody();
-
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .cookie(TOKEN_COOKIE_NAME, token)
                 .body(changePassRequestBody.toString())
                 .post(URL + "/users/changepassword");
-
         assertEquals(200, response.statusCode());
     }
 
@@ -252,11 +232,9 @@ public class CinemaSystemControllerTest {
     @Test
     public void retrieveUserProfileOk() {
         var token = loginAsJoseAndGetCookie();
-
         var response = given()
                 .cookie(TOKEN_COOKIE_NAME, token)
                 .get(URL + "/users/profile");
-
         response.then().body(USERNAME_KEY, is(USERNAME_JOSE))
                 .body(FULLNAME_KEY, is(JOSE_FULLNAME))
                 .body(POINTS_KEY, is(0))
@@ -295,11 +273,9 @@ public class CinemaSystemControllerTest {
     @Test
     public void movieOneOk() {
         var response = get(URL + "/movies/" + SetUpDb.SCHOOL_MOVIE_ID);
-
         response.then().body(MOVIE_NAME_KEY,
                 is(oneOf(SMALL_FISH_MOVIE_NAME, ROCK_IN_THE_SCHOOL_MOVIE_NAME,
                         RUNNING_FAR_AWAY_MOVIE_NAME, CRASH_TEA_MOVIE_NAME)));
-
         response.then().body(JSON_ROOT, hasKey(MOVIE_GENRES_KEY));
         response.then().body(JSON_ROOT, hasKey(MOVIE_PLOT_KEY));
         response.then().body(JSON_ROOT, hasKey(MOVIE_DURATION_KEY));
@@ -313,13 +289,11 @@ public class CinemaSystemControllerTest {
     @Test
     public void ratesFromMovieOneOk() {
         var response = get(URL + "/movies/" + SetUpDb.SCHOOL_MOVIE_ID + "/rate");
-
         response.then().body(JSON_ROOT,
                 hasItem(allOf(both(hasEntry(USERNAME_KEY, "lucia")).and(
                                 (hasEntry(COMMENT_KEY,
                                         "I really enjoy the movie")))
                         .and(hasEntry(RATE_VALUE_KEY, 4)))));
-
         response.then().body(JSON_ROOT,
                 hasItem(allOf(both(hasEntry(USERNAME_KEY, "nico")).and(
                                 (hasEntry(COMMENT_KEY,
@@ -343,16 +317,13 @@ public class CinemaSystemControllerTest {
     @Test
     public void rateMovieOk() throws JSONException {
         var token = loginAsJoseAndGetCookie();
-
         JSONObject rateRequestBody = new JSONObject();
         rateRequestBody.put(RATE_VALUE_KEY, 4);
         rateRequestBody.put(COMMENT_KEY, "a comment...");
-
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .cookie(TOKEN_COOKIE_NAME, token)
                 .body(rateRequestBody.toString())
                 .post(URL + "/movies/" + SetUpDb.SMALL_FISH_MOVIE_ID + "/rate");
-
         response.then().body(USERNAME_KEY, is(USERNAME_JOSE))
                 .body(RATE_VALUE_KEY, is(4))
                 .body(COMMENT_KEY, is("a comment..."));
@@ -363,11 +334,9 @@ public class CinemaSystemControllerTest {
         JSONObject rateRequestBody = new JSONObject();
         rateRequestBody.put(RATE_VALUE_KEY, 4);
         rateRequestBody.put(COMMENT_KEY, "a comment...");
-
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .body(rateRequestBody.toString())
                 .post(URL + "/movies/" + SetUpDb.SCHOOL_MOVIE_ID + "/rate");
-
         response.then().body(ERROR_MESSAGE_KEY,
                 is(CinemaSystemController.AUTHENTICATION_REQUIRED));
     }
@@ -375,11 +344,9 @@ public class CinemaSystemControllerTest {
     @Test
     public void reserveAShowFailIfNotAuthenticated() {
         JSONArray seatsRequest = jsonBodyForReserveSeats(5, 7, 9);
-
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .body(seatsRequest.toString())
                 .post(URL + "/shows/" + SetUpDb.SHOW_SMAL_FISH_ONE_ID + "/reserve");
-
         response.then().body(ERROR_MESSAGE_KEY,
                 is(CinemaSystemController.AUTHENTICATION_REQUIRED));
     }
@@ -389,11 +356,9 @@ public class CinemaSystemControllerTest {
         var token = loginAsNicoAndGetCookie();
         JSONArray seatsRequest = jsonBodyForReserveSeats(7);
         reservePost(token, seatsRequest);
-
         var tokenJose = loginAsJoseAndGetCookie();
         JSONArray seatsRequest2 = jsonBodyForReserveSeats(5, 7, 9);
         var failedResponse = reservePost(tokenJose, seatsRequest2);
-
         failedResponse.then().body(ERROR_MESSAGE_KEY,
                 is("All or some of the seats chosen are busy"));
     }
@@ -401,13 +366,10 @@ public class CinemaSystemControllerTest {
     @Test
     public void payAShowFailIfNotAuthenticated() throws JSONException {
         JSONArray seatsRequest = jsonBodyForReserveSeats(2, 3, 7);
-
         JSONObject paymentRequest = paymentRequestForSeats(seatsRequest);
-
         var response = given().contentType(JSON_CONTENT_TYPE)
                 .body(paymentRequest.toString())
                 .post(URL + "/shows/" + SetUpDb.SHOW_SMAL_FISH_ONE_ID + "/pay");
-
         response.then().body(ERROR_MESSAGE_KEY,
                 is(CinemaSystemController.AUTHENTICATION_REQUIRED));
     }
@@ -416,11 +378,8 @@ public class CinemaSystemControllerTest {
     public void payNotReservedSeatsFail() throws JSONException {
         var token = loginAsNicoAndGetCookie();
         JSONArray seatsRequest = jsonBodyForReserveSeats(2, 3, 7);
-
         JSONObject paymentRequest = paymentRequestForSeats(seatsRequest);
-
         var failedResponse = payPost(token, paymentRequest);
-
         failedResponse.then().body(ERROR_MESSAGE_KEY,
                 is("Reservation is required before confirm"));
     }
@@ -430,11 +389,8 @@ public class CinemaSystemControllerTest {
         var token = loginAsNicoAndGetCookie();
         JSONArray seatsRequest = jsonBodyForReserveSeats(12, 13, 17);
         reservePost(token, seatsRequest);
-
         JSONObject paymentRequest = paymentRequestForSeats(seatsRequest);
-
         var response = payPost(token, paymentRequest);
-
         response.then().body(SHOW_MOVIE_NAME_KEY,
                 is(oneOf(SMALL_FISH_MOVIE_NAME, ROCK_IN_THE_SCHOOL_MOVIE_NAME,
                         RUNNING_FAR_AWAY_MOVIE_NAME, CRASH_TEA_MOVIE_NAME)));
@@ -459,20 +415,16 @@ public class CinemaSystemControllerTest {
     @Test
     public void reserveAShowOk() {
         var response = reserveSeatsTwoFourFromShowOnePost();
-
         List<Map<String, Object>> list = response.then().extract().jsonPath()
                 .getList(CURRENT_SEATS_KEY);
-
         var notAvailableSeats = list.stream()
                 .filter(l -> l.get(SEAT_AVAILABLE_KEY).equals(false))
                 .toList();
         var availableSeats = list.stream()
                 .filter(l -> l.get(SEAT_AVAILABLE_KEY).equals(true))
                 .toList();
-
         assertEquals(3, notAvailableSeats.size());
         assertEquals(27, availableSeats.size());
-
         response.then().body(INFO_KEY + "." + SHOW_MOVIE_NAME_KEY,
                 is(oneOf(SMALL_FISH_MOVIE_NAME, ROCK_IN_THE_SCHOOL_MOVIE_NAME,
                         RUNNING_FAR_AWAY_MOVIE_NAME, CRASH_TEA_MOVIE_NAME)));
@@ -483,9 +435,7 @@ public class CinemaSystemControllerTest {
 
     private Response reserveSeatsTwoFourFromShowOnePost() {
         var token = loginAsJoseAndGetCookie();
-
         JSONArray seatsRequest = jsonBodyForReserveSeats(2, 4);
-
         return reservePost(token, seatsRequest);
     }
 

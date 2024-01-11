@@ -1,6 +1,5 @@
 package javalin.web;
 
-import hexagon.primary.port.DateTimeProvider;
 import infra.primary.javalin.web.CinemaSystemController;
 import infra.secondary.jpa.TxJpaCinema;
 import infra.secondary.token.PasetoForGeneratingTokens;
@@ -12,6 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import spring.main.SetUpDb;
 
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 
 import static io.restassured.RestAssured.get;
@@ -53,7 +53,7 @@ public class CinemaSystemControllerTest {
                 },
                 (String to, String subject, String body) -> {
                 },
-                new PasetoForGeneratingTokens(SECRET), DateTimeProvider.create(), 10);
+                new PasetoForGeneratingTokens(SECRET), LocalDateTime::now, 10);
 
         new CinemaSystemController(8080, cinema).start();
     }

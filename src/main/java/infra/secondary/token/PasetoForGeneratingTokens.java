@@ -3,30 +3,29 @@ package infra.secondary.token;
 import dev.paseto.jpaseto.Paseto;
 import dev.paseto.jpaseto.Pasetos;
 import dev.paseto.jpaseto.lang.Keys;
-import hexagon.primary.port.AuthException;
-import hexagon.primary.port.DateTimeProvider;
 import hexagon.secondary.port.ForGeneratingTokens;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class PasetoForGeneratingTokens implements ForGeneratingTokens {
-
     static final String INVALID_TOKEN = "Invalid token. You have to login.";
     private final byte[] base64Secret;
     private static final long defaultMilliSecondsSinceNow = 60 * 60 * 1000; // 1
     // hs
-    private final DateTimeProvider dateProvider;
+    private final Supplier<LocalDateTime> dateProvider;
     private final Long milliSecondsSinceNow;
 
     public PasetoForGeneratingTokens(String base64Secret) {
-        this(DateTimeProvider.create(), base64Secret,
+        this(LocalDateTime::now, base64Secret,
                 defaultMilliSecondsSinceNow);
     }
 
-    public PasetoForGeneratingTokens(DateTimeProvider dateProvider, String base64Secret,
+    public PasetoForGeneratingTokens(Supplier<LocalDateTime> dateProvider, String base64Secret,
                                      long milliSecondsSinceNow) {
         this.dateProvider = dateProvider;
         this.base64Secret = Base64.getDecoder().decode(base64Secret);
@@ -34,7 +33,7 @@ public class PasetoForGeneratingTokens implements ForGeneratingTokens {
     }
 
     private Long expiration() {
-        return (dateProvider.now().atZone(ZoneId.systemDefault()).toInstant()
+        return (dateProvider.get().atZone(ZoneId.systemDefault()).toInstant()
                 .toEpochMilli() + this.milliSecondsSinceNow) / 1000;
     }
 
@@ -55,7 +54,7 @@ public class PasetoForGeneratingTokens implements ForGeneratingTokens {
                     .parse(token);
             return tk.getClaims().get("id", String.class);
         } catch (Exception ex) {
-            throw new AuthException(INVALID_TOKEN);
+            throw new RuntimeException(INVALID_TOKEN);
         }
     }
 }

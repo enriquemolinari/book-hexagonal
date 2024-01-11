@@ -8,7 +8,6 @@ import infra.secondary.jpa.TxJpaCinema;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -37,14 +36,8 @@ public class CinemaTest {
     private static final String ANTONIOUSER_USERNAME = "antonio";
     private static final String NON_EXISTENT_ID = "3c608ba1-1aa5-4f85-9dc6-e0fe4fa4cc0a";
     private final ForTests tests = new ForTests();
-
     private static EntityManagerFactory emf;
-
-    @BeforeEach
-    public void setUp() {
-        emf = Persistence.createEntityManagerFactory("test-derby-cinema");
-    }
-
+    
     @ParameterizedTest
     @MethodSource(value = "createCinema")
     public void aShowIsPlayingAt(CinemaSystem cinema) {
@@ -88,7 +81,7 @@ public class CinemaTest {
 
     private static List<CinemaSystem> createCinema(int pageSize, DateTimeProvider provider) {
         var tests = new ForTests();
-        var emf = Persistence.createEntityManagerFactory("test-derby-cinema");
+        emf = Persistence.createEntityManagerFactory("test-derby-cinema");
         return List.of(new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
                         tests.doNothingEmailProvider(), tests.doNothingToken(), provider, pageSize),
                 new Cinema(new HashMapForManagingMovies(pageSize), new HashMapForManangingShows(),
@@ -261,6 +254,7 @@ public class CinemaTest {
     public void jpaConfirmAndPaySeats() {
         var fakePaymenentProvider = tests.fakePaymenentProvider();
         var fakeEmailProvider = tests.fakeEmailProvider();
+        emf = Persistence.createEntityManagerFactory("test-derby-cinema");
         var cinema = new TxJpaCinema(emf, fakePaymenentProvider, fakeEmailProvider,
                 tests.doNothingToken(), DateTimeProvider.create(), 10);
         confirmAndPaySeats(cinema, fakePaymenentProvider, fakeEmailProvider);
