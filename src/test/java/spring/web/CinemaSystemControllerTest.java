@@ -3,6 +3,7 @@ package spring.web;
 import hexagon.Cinema;
 import infra.primary.spring.web.CinemaSystemController;
 import io.restassured.response.Response;
+import org.hamcrest.Matchers;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -178,7 +179,7 @@ public class CinemaSystemControllerTest {
     public void retrieveUserProfileFailIfNotAuthenticated() {
         var response = get(URL + "/users/profile");
         response.then().body(ERROR_MESSAGE_KEY,
-                is(CinemaSystemController.AUTHENTICATION_REQUIRED));
+                Matchers.is(CinemaSystemController.AUTHENTICATION_REQUIRED));
     }
 
     @Test

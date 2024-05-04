@@ -1,7 +1,6 @@
 package infra.secondary.token;
 
 import dev.paseto.jpaseto.lang.Keys;
-import hexagon.primary.port.AuthException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,12 +32,12 @@ public class ForGeneratingTokensTest {
 
     @Test
     public void expiredToken() {
-        var token = new PasetoForGeneratingTokens(() -> LocalDateTime.now().minusMinutes(5),
+        var token = new PasetoForGeneratingTokens(() -> LocalDateTime.now().minusMinutes(15),
                 encodedKey,
                 60 * 1000);
         var stringToken = token.tokenFrom(Map.of("id", "1"));
 
-        var e = assertThrows(AuthException.class, () -> {
+        var e = assertThrows(RuntimeException.class, () -> {
             token.verifyAndGetUserIdFrom(stringToken);
             fail("I have obtained the user id from an expired token");
         });

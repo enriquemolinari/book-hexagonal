@@ -16,6 +16,7 @@ public class CinemaSystemController {
     public static final String AUTHENTICATION_REQUIRED = "You must be logged in to perform this action...";
     private final int webPort;
     private final CinemaSystem cinema;
+    private Javalin javalinApp;
 
     public CinemaSystemController(int webPort, CinemaSystem cinema) {
         this.webPort = webPort;
@@ -23,25 +24,29 @@ public class CinemaSystemController {
     }
 
     public void start() {
-        Javalin app = Javalin.create();
-        app.post("/login", login());
-        app.post("/logout", logout());
-        app.post("/movies/{id}/rate", rateMovie());
-        app.get("/shows/{id}", showDetail());
+        javalinApp = Javalin.create();
+        javalinApp.post("/login", login());
+        javalinApp.post("/logout", logout());
+        javalinApp.post("/movies/{id}/rate", rateMovie());
+        javalinApp.get("/shows/{id}", showDetail());
         // finish with the other endpoints
 
-        app.exception(AuthException.class, (e, ctx) -> {
+        javalinApp.exception(AuthException.class, (e, ctx) -> {
             ctx.status(401);
             ctx.json(Map.of("message", e.getMessage()));
             // log error in a stream...
         });
 
-        app.exception(Exception.class, (e, ctx) -> {
+        javalinApp.exception(Exception.class, (e, ctx) -> {
             ctx.json(
                     Map.of("message",
                             e.getMessage()));
             // log error in a stream...
         }).start(this.webPort);
+    }
+
+    public void stop() {
+        this.javalinApp.stop();
     }
 
     private Handler rateMovie() {

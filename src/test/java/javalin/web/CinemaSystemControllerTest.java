@@ -4,9 +4,11 @@ import infra.primary.javalin.web.CinemaSystemController;
 import infra.secondary.jpa.TxJpaCinema;
 import infra.secondary.token.PasetoForGeneratingTokens;
 import io.restassured.response.Response;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import spring.main.SetUpDb;
@@ -18,6 +20,7 @@ import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
+//@Disabled
 // just to demonstrate testing on Javalin web app
 public class CinemaSystemControllerTest {
     private static final String INFO_KEY = "info";
@@ -40,11 +43,13 @@ public class CinemaSystemControllerTest {
     private static final String TOKEN_COOKIE_NAME = "token";
     private static final String JSON_CONTENT_TYPE = "application/json";
     private static final String URL = "http://localhost:8080";
+    private static CinemaSystemController cinemaSystemController;
+    private static EntityManagerFactory emf;
 
     @BeforeAll
     public static void before() {
         String SECRET = "Kdj5zuBIBBgcWpv9zjKOINl2yUKUXVKO+SkOVE3VuZ4=";
-        var emf = Persistence
+        emf = Persistence
                 .createEntityManagerFactory("test-derby-cinema");
         new SetUpDb(emf).createSchemaAndPopulateSampleData();
         var cinema = new TxJpaCinema(emf,
@@ -55,7 +60,14 @@ public class CinemaSystemControllerTest {
                 },
                 new PasetoForGeneratingTokens(SECRET), LocalDateTime::now, 10);
 
-        new CinemaSystemController(8080, cinema).start();
+        cinemaSystemController = new CinemaSystemController(8080, cinema);
+        cinemaSystemController.start();
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        emf.close();
+        cinemaSystemController.stop();
     }
 
     @Test
