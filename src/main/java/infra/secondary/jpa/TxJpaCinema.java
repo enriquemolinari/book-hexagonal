@@ -48,7 +48,7 @@ public class TxJpaCinema implements CinemaSystem {
 
     @Override
     public List<MovieShows> showsUntil(LocalDateTime untilTo) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.showsUntil(untilTo);
         });
@@ -56,7 +56,7 @@ public class TxJpaCinema implements CinemaSystem {
 
     @Override
     public List<MovieInfo> pagedMoviesSortedByName(int pageNumber) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.pagedMoviesSortedByName(pageNumber);
         });
@@ -64,7 +64,7 @@ public class TxJpaCinema implements CinemaSystem {
 
     @Override
     public List<MovieInfo> pagedMoviesSortedByRate(int pageNumber) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.pagedMoviesSortedByRate(pageNumber);
         });
@@ -72,7 +72,7 @@ public class TxJpaCinema implements CinemaSystem {
 
     @Override
     public List<MovieInfo> pagedMoviesSortedByReleaseDate(int pageNumber) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.pagedMoviesSortedByReleaseDate(pageNumber);
         });
@@ -80,9 +80,9 @@ public class TxJpaCinema implements CinemaSystem {
 
     @Override
     public MovieInfo movie(String id) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             // Or have Cinema already instantiated and use a setter assigning the entityManager
-            // or instantiate Cinema every time and use a propper constructor. For me is better this.
+            // or instantiate Cinema every time and use a propper constructor. For me this is better.
             // Always create ready to use instances, better for understanding the use of the class.
             var cinema = createCinema(em);
             return cinema.movie(id);
@@ -91,7 +91,7 @@ public class TxJpaCinema implements CinemaSystem {
 
     @Override
     public DetailedShowInfo show(String id) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.show(id);
         });
@@ -100,12 +100,11 @@ public class TxJpaCinema implements CinemaSystem {
     @Override
     public MovieInfo addNewMovie(String name, int duration,
                                  LocalDate releaseDate, String plot, Set<Genre> genres) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.addNewMovie(name, duration, releaseDate, plot,
                     genres);
         });
-
     }
 
     private Cinema createCinema(EntityManager em) {
@@ -119,18 +118,17 @@ public class TxJpaCinema implements CinemaSystem {
     @Override
     public MovieInfo addActorTo(String movieId, String name, String surname,
                                 String email, String characterName) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.addActorTo(movieId, name, surname,
                     email, characterName);
         });
-
     }
 
     @Override
     public MovieInfo addDirectorTo(String movieId, String name,
                                    String surname, String email) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.addDirectorTo(movieId, name, surname,
                     email);
@@ -139,7 +137,7 @@ public class TxJpaCinema implements CinemaSystem {
 
     @Override
     public String addNewTheater(String name, Set<Integer> seatsNumbers) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.addNewTheater(name, seatsNumbers);
         });
@@ -148,7 +146,7 @@ public class TxJpaCinema implements CinemaSystem {
     @Override
     public ShowInfo addNewShowFor(String movieId, LocalDateTime startTime,
                                   float price, String theaterId, int pointsToWin) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.addNewShowFor(movieId, startTime, price, theaterId,
                     pointsToWin);
@@ -158,7 +156,7 @@ public class TxJpaCinema implements CinemaSystem {
     @Override
     public DetailedShowInfo reserve(String userId, String showTimeId,
                                     Set<Integer> selectedSeats) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.reserve(userId, showTimeId, selectedSeats);
         });
@@ -169,7 +167,7 @@ public class TxJpaCinema implements CinemaSystem {
                       Set<Integer> selectedSeats,
                       String creditCardNumber, YearMonth expirationDate,
                       String secturityCode) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.pay(userId, showTimeId, selectedSeats, creditCardNumber, expirationDate, secturityCode);
         });
@@ -188,7 +186,7 @@ public class TxJpaCinema implements CinemaSystem {
     @Override
     public List<UserMovieRate> pagedRatesOfOrderedDate(String movieId,
                                                        int pageNumber) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.pagedRatesOfOrderedDate(movieId, pageNumber);
         });
@@ -197,7 +195,7 @@ public class TxJpaCinema implements CinemaSystem {
     @Override
     public List<MovieInfo> pagedSearchMovieByName(String fullOrPartmovieName,
                                                   int pageNumber) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.pagedSearchMovieByName(fullOrPartmovieName,
                     pageNumber);
@@ -206,7 +204,7 @@ public class TxJpaCinema implements CinemaSystem {
 
     @Override
     public String login(String username, String password) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.login(username, password);
         });
@@ -214,13 +212,13 @@ public class TxJpaCinema implements CinemaSystem {
 
     @Override
     public String userIdFrom(String token) {
-        return inTx(em -> createCinema(em).userIdFrom(token));
+        return emf.callInTransaction(em -> createCinema(em).userIdFrom(token));
     }
 
     @Override
     public void changePassword(String userId, String currentPassword,
                                String newPassword1, String newPassword2) {
-        inTx(em -> {
+        emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             cinema.changePassword(userId, currentPassword, newPassword1,
                     newPassword2);
@@ -231,7 +229,7 @@ public class TxJpaCinema implements CinemaSystem {
 
     @Override
     public UserProfile profileFrom(String userId) {
-        return inTx(em -> {
+        return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return cinema.profileFrom(userId);
         });
@@ -246,29 +244,13 @@ public class TxJpaCinema implements CinemaSystem {
                     repeatPassword);
         });
     }
-
-    private <T> T inTx(Function<EntityManager, T> toExecute) {
-        var em = this.emf.createEntityManager();
-        var tx = em.getTransaction();
-        try {
-            tx.begin();
-            T t = toExecute.apply(em);
-            tx.commit();
-            return t;
-        } catch (Exception e) {
-            tx.rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
+    
     private <T> T inTxWithRetriesOnConflict(
             Function<EntityManager, T> toExecute) {
         int retries = 0;
         while (retries < NUMBER_OF_RETRIES) {
             try {
-                return inTx(toExecute);
+                return emf.callInTransaction(toExecute);
                 // There is no a great way in JPA to detect a constraint
                 // violation. I use RollbackException and retries one more
                 // time for specific use cases

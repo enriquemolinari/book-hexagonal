@@ -4,9 +4,9 @@ import hexagon.primary.port.*;
 import infra.secondary.inmemory.HashMapForManagingMovies;
 import infra.secondary.inmemory.HashMapForManagingUsers;
 import infra.secondary.inmemory.HashMapForManangingShows;
+import infra.secondary.jpa.EmfBuilder;
 import infra.secondary.jpa.TxJpaCinema;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,7 +37,7 @@ public class CinemaTest {
     private static final String NON_EXISTENT_ID = "3c608ba1-1aa5-4f85-9dc6-e0fe4fa4cc0a";
     private final ForTests tests = new ForTests();
     private static EntityManagerFactory emf;
-    
+
     @ParameterizedTest
     @MethodSource(value = "createCinema")
     public void aShowIsPlayingAt(CinemaSystem cinema) {
@@ -81,13 +81,18 @@ public class CinemaTest {
 
     private static List<CinemaSystem> createCinema(int pageSize, DateTimeProvider provider) {
         var tests = new ForTests();
-        emf = Persistence.createEntityManagerFactory("test-derby-cinema");
+        emf = createEmf();
+        // return both implementations in order to run the same tests in both
         return List.of(new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
                         tests.doNothingEmailProvider(), tests.doNothingToken(), provider, pageSize),
                 new Cinema(new HashMapForManagingMovies(pageSize), new HashMapForManangingShows(),
                         new HashMapForManagingUsers(),
                         tests.doNothingPaymentProvider(), tests.doNothingEmailProvider(),
                         provider, tests.doNothingToken()));
+    }
+
+    private static EntityManagerFactory createEmf() {
+        return new EmfBuilder().memory().withDropAndCreateDDL().build();
     }
 
     @ParameterizedTest
@@ -254,7 +259,7 @@ public class CinemaTest {
     public void jpaConfirmAndPaySeats() {
         var fakePaymenentProvider = tests.fakePaymenentProvider();
         var fakeEmailProvider = tests.fakeEmailProvider();
-        emf = Persistence.createEntityManagerFactory("test-derby-cinema");
+        emf = createEmf();
         var cinema = new TxJpaCinema(emf, fakePaymenentProvider, fakeEmailProvider,
                 tests.doNothingToken(), DateTimeProvider.create(), 10);
         confirmAndPaySeats(cinema, fakePaymenentProvider, fakeEmailProvider);

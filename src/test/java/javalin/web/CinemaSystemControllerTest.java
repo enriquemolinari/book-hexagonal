@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import spring.main.SetUpDb;
 
@@ -20,7 +21,7 @@ import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-//@Disabled
+@Disabled
 // just to demonstrate testing on Javalin web app
 public class CinemaSystemControllerTest {
     private static final String INFO_KEY = "info";

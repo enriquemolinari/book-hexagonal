@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import spring.main.SetUpDb;
 
 import java.time.YearMonth;
 
@@ -23,8 +22,6 @@ public class AppTestConfiguration {
     @Bean
     public CinemaSystem create() {
         String ANY_SECRET = "Kdj5zuBIBBgcWpv9zjKOINl2yUKUXVKO+SkOVE3VuZ4=";
-        new SetUpDb(entityManagerFactory)
-                .createSchemaAndPopulateSampleData();
         return new TxJpaCinema(entityManagerFactory,
                 (String creditCardNumber, YearMonth expire, String securityCode,
                  float totalAmount) -> {

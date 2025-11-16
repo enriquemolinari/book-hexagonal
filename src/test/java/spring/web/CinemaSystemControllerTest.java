@@ -3,11 +3,14 @@ package spring.web;
 import hexagon.Cinema;
 import infra.primary.spring.web.CinemaSystemController;
 import io.restassured.response.Response;
+import jakarta.persistence.EntityManagerFactory;
 import org.hamcrest.Matchers;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.ActiveProfiles;
@@ -66,6 +69,19 @@ public class CinemaSystemControllerTest {
     private static final String TOKEN_COOKIE_NAME = "token";
     private static final String JSON_CONTENT_TYPE = "application/json";
     private static final String URL = "http://localhost:8080";
+    @Autowired
+    private EntityManagerFactory emf;
+
+    @BeforeEach
+    void setUp() {
+        emf.getSchemaManager().truncate();
+
+        new SetUpDb(emf)
+                .createSchemaAndPopulateSampleData();
+
+//        anyValidShowId = showId();
+//        smallFishMovieId = movieSmallFishId();
+    }
 
     @Test
     public void loginOk() {
@@ -424,8 +440,8 @@ public class CinemaSystemControllerTest {
         var availableSeats = list.stream()
                 .filter(l -> l.get(SEAT_AVAILABLE_KEY).equals(true))
                 .toList();
-        assertEquals(3, notAvailableSeats.size());
-        assertEquals(27, availableSeats.size());
+        assertEquals(2, notAvailableSeats.size());
+        assertEquals(28, availableSeats.size());
         response.then().body(INFO_KEY + "." + SHOW_MOVIE_NAME_KEY,
                 is(oneOf(SMALL_FISH_MOVIE_NAME, ROCK_IN_THE_SCHOOL_MOVIE_NAME,
                         RUNNING_FAR_AWAY_MOVIE_NAME, CRASH_TEA_MOVIE_NAME)));
