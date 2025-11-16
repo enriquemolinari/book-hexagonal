@@ -1,6 +1,6 @@
 # Hexagonal Architecture
 
-This repository contains the implementation of the Cinema Ticket System using the Hexagonal architecture.
+This repository contains the implementation of the Cinema Ticket System using the hexagonal architecture.
 
 - `git clone https://github.com/enriquemolinari/book-hexagonal`
 - `cd book-hexagonal`
