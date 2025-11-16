@@ -28,15 +28,7 @@
 
     <dependencies>
 
-        <!-- Javalin -->
-        <dependency>
-            <groupId>io.javalin</groupId>
-            <artifactId>javalin</artifactId>
-            <version>5.5.0</version>
-        </dependency>
-
         <!-- SpringBoot -->
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
