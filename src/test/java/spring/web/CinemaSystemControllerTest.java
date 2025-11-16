@@ -78,9 +78,6 @@ public class CinemaSystemControllerTest {
 
         new SetUpDb(emf)
                 .createSchemaAndPopulateSampleData();
-
-//        anyValidShowId = showId();
-//        smallFishMovieId = movieSmallFishId();
     }
 
     @Test

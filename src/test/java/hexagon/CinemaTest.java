@@ -8,6 +8,7 @@ import infra.secondary.jpa.EmfBuilder;
 import infra.secondary.jpa.TxJpaCinema;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -37,6 +38,16 @@ public class CinemaTest {
     private static final String NON_EXISTENT_ID = "3c608ba1-1aa5-4f85-9dc6-e0fe4fa4cc0a";
     private final ForTests tests = new ForTests();
     private static EntityManagerFactory emf;
+
+    @BeforeAll
+    public static void setUp() {
+        emf = new EmfBuilder().memory().withDropAndCreateDDL().build();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        emf.getSchemaManager().truncate();
+    }
 
     @ParameterizedTest
     @MethodSource(value = "createCinema")
@@ -81,7 +92,6 @@ public class CinemaTest {
 
     private static List<CinemaSystem> createCinema(int pageSize, DateTimeProvider provider) {
         var tests = new ForTests();
-        emf = createEmf();
         // return both implementations in order to run the same tests in both
         return List.of(new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
                         tests.doNothingEmailProvider(), tests.doNothingToken(), provider, pageSize),
@@ -89,10 +99,6 @@ public class CinemaTest {
                         new HashMapForManagingUsers(),
                         tests.doNothingPaymentProvider(), tests.doNothingEmailProvider(),
                         provider, tests.doNothingToken()));
-    }
-
-    private static EntityManagerFactory createEmf() {
-        return new EmfBuilder().memory().withDropAndCreateDDL().build();
     }
 
     @ParameterizedTest
@@ -259,7 +265,6 @@ public class CinemaTest {
     public void jpaConfirmAndPaySeats() {
         var fakePaymenentProvider = tests.fakePaymenentProvider();
         var fakeEmailProvider = tests.fakeEmailProvider();
-        emf = createEmf();
         var cinema = new TxJpaCinema(emf, fakePaymenentProvider, fakeEmailProvider,
                 tests.doNothingToken(), DateTimeProvider.create(), 10);
         confirmAndPaySeats(cinema, fakePaymenentProvider, fakeEmailProvider);
@@ -523,11 +528,6 @@ public class CinemaTest {
     private String createATheater(CinemaSystem cinema) {
         return cinema.addNewTheater("a Theater",
                 Set.of(1, 2, 3, 4, 5, 6));
-    }
-
-    @AfterEach
-    public void tearDown() {
-        emf.close();
     }
 
 }
