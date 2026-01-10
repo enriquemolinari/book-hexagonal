@@ -83,14 +83,6 @@ public class TxJpaCinema implements CinemaSystem {
         return callInTx(cinema -> cinema.addNewMovie(name, duration, releaseDate, plot, genres));
     }
 
-    private Cinema createCinema(EntityManager em) {
-        return new Cinema(new JpaForManagingMovies(em, this.pageSize),
-                new JpaForManagingShows(em),
-                new JpaForManagingUsers(em),
-                this.forPayments, this.forSendingEmails,
-                this.timeProvider, this.token);
-    }
-
     @Override
     public MovieInfo addActorTo(String movieId, String name, String surname,
                                 String email, String characterName) {
@@ -177,6 +169,14 @@ public class TxJpaCinema implements CinemaSystem {
         return inTxWithRetriesOnConflict(cinema -> {
             return cinema.rateMovieBy(userId, idMovie, rateValue, comment);
         });
+    }
+
+    private Cinema createCinema(EntityManager em) {
+        return new Cinema(new JpaForManagingMovies(em, this.pageSize),
+                new JpaForManagingShows(em),
+                new JpaForManagingUsers(em),
+                this.forPayments, this.forSendingEmails,
+                this.timeProvider, this.token);
     }
 
     public void execInTx(Consumer<CinemaSystem> toExecute) {
