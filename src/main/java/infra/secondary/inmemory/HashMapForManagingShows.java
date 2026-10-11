@@ -11,11 +11,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class HashMapForManangingShows implements ForManagingShows {
+public class HashMapForManagingShows implements ForManagingShows {
     private final Map<String, Theater> theaters;
     private final Map<String, ShowTime> shows;
 
-    public HashMapForManangingShows() {
+    public HashMapForManagingShows() {
         this.theaters = new HashMap<>();
         this.shows = new HashMap<>();
     }

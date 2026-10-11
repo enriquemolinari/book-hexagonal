@@ -179,14 +179,14 @@ public class TxJpaCinema implements CinemaSystem {
                 this.timeProvider, this.token);
     }
 
-    public void execInTx(Consumer<CinemaSystem> toExecute) {
+    private void execInTx(Consumer<CinemaSystem> toExecute) {
         emf.runInTransaction(em -> {
             var cinema = createCinema(em);
             toExecute.accept(cinema);
         });
     }
 
-    public <T> T callInTx(Function<CinemaSystem, T> toExecuteAndReturn) {
+    private <T> T callInTx(Function<CinemaSystem, T> toExecuteAndReturn) {
         return emf.callInTransaction(em -> {
             var cinema = createCinema(em);
             return toExecuteAndReturn.apply(cinema);

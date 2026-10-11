@@ -3,7 +3,7 @@ package hexagon;
 import hexagon.primary.port.*;
 import infra.secondary.inmemory.HashMapForManagingMovies;
 import infra.secondary.inmemory.HashMapForManagingUsers;
-import infra.secondary.inmemory.HashMapForManangingShows;
+import infra.secondary.inmemory.HashMapForManagingShows;
 import infra.secondary.jpa.EmfBuilder;
 import infra.secondary.jpa.TxJpaCinema;
 import jakarta.persistence.EntityManagerFactory;
@@ -95,7 +95,7 @@ public class CinemaTest {
         // return both implementations in order to run the same tests in both
         return List.of(new TxJpaCinema(emf, tests.doNothingPaymentProvider(),
                         tests.doNothingEmailProvider(), tests.doNothingToken(), provider, pageSize),
-                new Cinema(new HashMapForManagingMovies(pageSize), new HashMapForManangingShows(),
+                new Cinema(new HashMapForManagingMovies(pageSize), new HashMapForManagingShows(),
                         new HashMapForManagingUsers(),
                         tests.doNothingPaymentProvider(), tests.doNothingEmailProvider(),
                         provider, tests.doNothingToken()));
@@ -274,7 +274,7 @@ public class CinemaTest {
     public void hashMapConfirmAndPaySeats() {
         var fakePaymenentProvider = tests.fakePaymenentProvider();
         var fakeEmailProvider = tests.fakeEmailProvider();
-        var cinema = new Cinema(new HashMapForManagingMovies(10), new HashMapForManangingShows(),
+        var cinema = new Cinema(new HashMapForManagingMovies(10), new HashMapForManagingShows(),
                 new HashMapForManagingUsers(),
                 fakePaymenentProvider, fakeEmailProvider,
                 DateTimeProvider.create(), tests.doNothingToken());
